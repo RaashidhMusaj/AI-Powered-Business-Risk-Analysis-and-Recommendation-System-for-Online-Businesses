@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -8,12 +9,16 @@ from app.repositories.user_repository import UserRepository
 from app.security.password import hash_password, verify_password
 from app.security.jwt import create_access_token
 from app.utils.exceptions import BaseBusinessException
+from app.utils.logger import api_logger
 from app.api.schemas.auth_schema import (
     UserRegisterRequest,
     UserLoginRequest,
     TokenDataResponse,
     UserProfileResponse,
 )
+
+MAX_FAILED_LOGIN_ATTEMPTS = 5
+LOCKOUT_DURATION_MINUTES = 15
 
 
 class UserAlreadyExistsError(BaseBusinessException):
@@ -26,9 +31,14 @@ class InvalidCredentialsError(BaseBusinessException):
         super().__init__(message=message, status_code=status.HTTP_401_UNAUTHORIZED)
 
 
+class AccountLockedError(BaseBusinessException):
+    def __init__(self, message: str = "Account is temporarily locked due to excessive failed attempts. Please try again in 15 minutes."):
+        super().__init__(message=message, status_code=status.HTTP_401_UNAUTHORIZED)
+
+
 class AuthService:
     """
-    Business Service handling user registration, authentication, and JWT token issuance.
+    Business Service handling user registration, authentication, account lockout, and JWT token issuance.
     """
     def __init__(self, db: Session, user_repo: UserRepository = None):
         self.db = db
@@ -44,12 +54,16 @@ class AuthService:
             raise UserAlreadyExistsError("This username is already taken.")
 
         hashed_pwd = hash_password(schema.password)
+        user_role = (schema.role or "seller").lower().strip()
         new_user = User(
             email=schema.email.lower().strip(),
             username=schema.username.lower().strip(),
             hashed_password=hashed_pwd,
             full_name=schema.fullName,
+            role=user_role,
             is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
         )
 
         created_user = self.user_repo.create(new_user)
@@ -64,15 +78,50 @@ class AuthService:
             userId=str(created_user.id),
             username=created_user.username,
             email=created_user.email,
+            role=created_user.role or "seller",
         )
 
     def authenticate_user(self, schema: UserLoginRequest) -> TokenDataResponse:
         user = self.user_repo.get_by_email_or_username(schema.emailOrUsername)
-        if not user or not verify_password(schema.password, user.hashed_password):
+        if not user:
             raise InvalidCredentialsError("Invalid username/email or password.")
 
         if not user.is_active:
             raise InvalidCredentialsError("Account is inactive.")
+
+        now_utc = datetime.now(timezone.utc)
+
+        # Check account lockout status
+        if user.locked_until:
+            locked_until = user.locked_until
+            if locked_until.tzinfo is None:
+                locked_until = locked_until.replace(tzinfo=timezone.utc)
+
+            if now_utc < locked_until:
+                remaining_mins = max(1, int((locked_until - now_utc).total_seconds() // 60))
+                raise AccountLockedError(f"Account is temporarily locked due to excessive failed attempts. Please try again in {remaining_mins} minutes.")
+            else:
+                # Lockout expired -> reset counter
+                user.failed_login_attempts = 0
+                user.locked_until = None
+                self.db.commit()
+
+        if not verify_password(schema.password, user.hashed_password):
+            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+            if user.failed_login_attempts >= MAX_FAILED_LOGIN_ATTEMPTS:
+                user.locked_until = now_utc + timedelta(minutes=LOCKOUT_DURATION_MINUTES)
+                self.db.commit()
+                api_logger.warning(f"Account locked for username [{user.username}] after {user.failed_login_attempts} failed login attempts.")
+                raise AccountLockedError(f"Account is temporarily locked due to excessive failed attempts. Please try again in {LOCKOUT_DURATION_MINUTES} minutes.")
+
+            self.db.commit()
+            raise InvalidCredentialsError("Invalid username/email or password.")
+
+        # Reset failed login attempt counter on successful login
+        if user.failed_login_attempts > 0 or user.locked_until is not None:
+            user.failed_login_attempts = 0
+            user.locked_until = None
+            self.db.commit()
 
         token = create_access_token(data={"sub": str(user.id), "username": user.username})
 
@@ -82,6 +131,7 @@ class AuthService:
             userId=str(user.id),
             username=user.username,
             email=user.email,
+            role=user.role or "seller",
         )
 
     def get_user_profile(self, user_id: UUID) -> UserProfileResponse:
@@ -94,6 +144,7 @@ class AuthService:
             email=user.email,
             username=user.username,
             fullName=user.full_name,
+            role=user.role or "seller",
             isActive=user.is_active,
             createdAt=user.created_at.isoformat() if user.created_at else "",
         )

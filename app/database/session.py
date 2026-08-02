@@ -37,18 +37,30 @@ def ensure_schema_migrations():
             inspector = inspect(engine)
             table_names = inspector.get_table_names()
 
-            # Ensure system admin default user exists
+            # Ensure users table columns & system admin default user exist
             if "users" in table_names:
+                user_cols = [c["name"].lower() for c in inspector.get_columns("users")]
+                if "role" not in user_cols:
+                    db_logger.info("Migrating users table: adding missing 'role' column...")
+                    conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(32) DEFAULT 'seller'"))
+                if "failed_login_attempts" not in user_cols:
+                    db_logger.info("Migrating users table: adding missing 'failed_login_attempts' column...")
+                    conn.execute(text("ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0"))
+                if "locked_until" not in user_cols:
+                    db_logger.info("Migrating users table: adding missing 'locked_until' column...")
+                    dt_type = "DATETIME" if is_sqlite else "TIMESTAMP"
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN locked_until {dt_type}"))
+
                 now_iso = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
                 if is_sqlite:
                     conn.execute(text(f"""
-                        INSERT OR IGNORE INTO users (id, created_at, updated_at, email, username, hashed_password, full_name, is_active)
-                        VALUES ('{DEFAULT_SYSTEM_USER_ID}', '{now_iso}', '{now_iso}', 'system@local', 'system_admin', 'hashed_system', 'System Admin', 1)
+                        INSERT OR IGNORE INTO users (id, created_at, updated_at, email, username, hashed_password, full_name, role, is_active, failed_login_attempts)
+                        VALUES ('{DEFAULT_SYSTEM_USER_ID}', '{now_iso}', '{now_iso}', 'system@local', 'system_admin', 'hashed_system', 'System Admin', 'admin', 1, 0)
                     """))
                 else:
                     conn.execute(text(f"""
-                        INSERT INTO users (id, created_at, updated_at, email, username, hashed_password, full_name, is_active)
-                        VALUES ('{DEFAULT_SYSTEM_USER_ID}', '{now_iso}', '{now_iso}', 'system@local', 'system_admin', 'hashed_system', 'System Admin', true)
+                        INSERT INTO users (id, created_at, updated_at, email, username, hashed_password, full_name, role, is_active, failed_login_attempts)
+                        VALUES ('{DEFAULT_SYSTEM_USER_ID}', '{now_iso}', '{now_iso}', 'system@local', 'system_admin', 'hashed_system', 'System Admin', 'admin', true, 0)
                         ON CONFLICT (id) DO NOTHING
                     """))
 

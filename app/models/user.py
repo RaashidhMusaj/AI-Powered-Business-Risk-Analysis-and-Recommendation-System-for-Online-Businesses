@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, Integer, DateTime
 from sqlalchemy.orm import relationship
 
 from app.database.base import BaseEntity
@@ -14,7 +14,10 @@ class User(BaseEntity):
     username = Column(String(64), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(128), nullable=True)
+    role = Column(String(32), default="seller", nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    failed_login_attempts = Column(Integer, default=0, nullable=False)
+    locked_until = Column(DateTime, nullable=True)
 
     # Relationships
     products = relationship(

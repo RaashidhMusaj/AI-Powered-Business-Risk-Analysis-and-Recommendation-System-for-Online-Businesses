@@ -1,19 +1,15 @@
 import pytest
 import concurrent.futures
-from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
 
 
-def test_concurrent_multi_user_isolation():
+def test_concurrent_multi_user_isolation(client):
     # 1. Register & Login User A
     r_a = client.post(
         "/api/v1/auth/register",
         json={
             "email": "userA_concurrent@example.com",
             "username": "user_a_conc",
-            "password": "password123"
+            "password": "SecurePassword123!"
         }
     )
     if r_a.status_code == 200:
@@ -21,7 +17,7 @@ def test_concurrent_multi_user_isolation():
     else:
         l_a = client.post(
             "/api/v1/auth/login",
-            json={"emailOrUsername": "user_a_conc", "password": "password123"}
+            json={"emailOrUsername": "user_a_conc", "password": "SecurePassword123!"}
         )
         token_a = l_a.json()["data"]["accessToken"]
 
@@ -31,7 +27,7 @@ def test_concurrent_multi_user_isolation():
         json={
             "email": "userB_concurrent@example.com",
             "username": "user_b_conc",
-            "password": "password123"
+            "password": "SecurePassword123!"
         }
     )
     if r_b.status_code == 200:
@@ -39,7 +35,7 @@ def test_concurrent_multi_user_isolation():
     else:
         l_b = client.post(
             "/api/v1/auth/login",
-            json={"emailOrUsername": "user_b_conc", "password": "password123"}
+            json={"emailOrUsername": "user_b_conc", "password": "SecurePassword123!"}
         )
         token_b = l_b.json()["data"]["accessToken"]
 
