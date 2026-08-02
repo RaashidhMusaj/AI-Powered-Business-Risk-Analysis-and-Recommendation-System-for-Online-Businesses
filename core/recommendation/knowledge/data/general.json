@@ -1,0 +1,24 @@
+[
+  {
+    "id": "general_low_001",
+    "aspect": "GENERAL",
+    "risk_level": "LOW",
+    "title": "Keep Up Your Excellent Performance",
+    "description": "Your business is performing well, and customers are generally satisfied with your products and service. Continue maintaining these standards to build customer trust and encourage repeat purchases.",
+    "actions": [
+      "Continue monitoring product quality and customer feedback regularly",
+      "Respond promptly to customer questions and concerns",
+      "Encourage satisfied customers to leave honest reviews and ratings",
+      "Keep delivering a consistent shopping experience to maintain customer trust"
+    ],
+    "priority": "NORMAL",
+    "tags": [
+      "general",
+      "maintenance",
+      "customer_satisfaction",
+      "business_growth"
+    ],
+    "version": 1,
+    "enabled": true
+  }
+]

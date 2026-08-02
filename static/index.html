@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Business Risk Analysis & Recommendation System</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom & Dashboard CSS -->
+    <link rel="stylesheet" href="/static/css/style.css?v=3.0.0">
+    <link rel="stylesheet" href="/static/css/dashboard.css?v=3.0.0">
+</head>
+
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <!-- Header Navbar -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3 sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="#" id="brandLogoBtn">
+                <div class="brand-logo bg-primary text-white rounded-3 d-flex align-items-center justify-content-center shadow"
+                    style="width: 44px; height: 44px;">
+                    <i class="fa-solid fa-shield-halved fa-lg"></i>
+                </div>
+                <div>
+                    <h1 class="h4 mb-0 font-weight-bold text-white tracking-wide">AI Business Risk Analysis</h1>
+                    <p class="small text-muted mb-0">E-Commerce Product Risk & Recommendation Intelligence Engine</p>
+                </div>
+            </a>
+
+            <!-- Unauthenticated Top Nav Buttons -->
+            <div id="unauthNavControls" class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-light btn-sm px-3 rounded-3" id="btnNavLogin" data-bs-toggle="modal"
+                    data-bs-target="#authModal" onclick="DashboardController.switchAuthTab('login')">
+                    <i class="fa-solid fa-right-to-bracket me-1"></i> Log In
+                </button>
+                <button class="btn btn-primary btn-sm px-3 rounded-3 font-weight-bold shadow-sm" id="btnNavRegister"
+                    data-bs-toggle="modal" data-bs-target="#authModal" onclick="DashboardController.switchAuthTab('register')">
+                    <i class="fa-solid fa-user-plus me-1"></i> Register
+                </button>
+            </div>
+
+            <!-- Authenticated Top Nav Controls -->
+            <div id="authNavControls" class="d-none d-flex align-items-center gap-3">
+                <span class="badge bg-secondary-subtle text-light border border-secondary px-3 py-2 fs-6 rounded-3">
+                    <i class="fa-solid fa-user-circle me-1 text-info"></i> Welcome, <strong id="navUsername">User</strong>
+                </span>
+                <button class="btn btn-outline-info btn-sm px-3 rounded-3" id="btnNavWorkspace">
+                    <i class="fa-solid fa-chart-pie me-1"></i> My Workspace
+                </button>
+                <button class="btn btn-outline-danger btn-sm px-3 rounded-3" id="btnNavLogout">
+                    <i class="fa-solid fa-power-off me-1"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-4 flex-grow-1">
+
+        <!-- Alert Notification Banner -->
+        <div id="alertBanner" class="alert alert-dismissible fade show d-none shadow-sm mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i id="alertIcon" class="fa-solid me-2 fa-lg"></i>
+                <div id="alertMessage">Notification Message</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- LANDING PAGE HERO SECTION -->
+        <section id="landingHeroSection" class="mb-5 fade-in">
+            <!-- Hero Banner -->
+            <div class="card bg-dark text-white rounded-4 border-0 shadow-lg overflow-hidden position-relative mb-4 hero-banner">
+                <div class="card-body p-5 position-relative z-1">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-8">
+                            <span class="badge bg-primary px-3 py-2 text-uppercase mb-3 tracking-wide">
+                                <i class="fa-solid fa-brain me-1"></i> Next-Gen AI Risk & Recommendation Engine
+                            </span>
+                            <h2 class="display-5 font-weight-bold text-white mb-3">
+                                Evaluate E-Commerce Product Risks & Actionable Recommendations
+                            </h2>
+                            <p class="lead text-light mb-4" style="opacity: 0.9;">
+                                Automated web scraping, multilingual <strong>XLM-RoBERTa Sentiment AI</strong>, <strong>Mamdani Fuzzy Inference Systems (FIS)</strong>, and automated <strong>Recommendation Generation</strong> quantify product quality, delivery, and trust scores.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3">
+                                <button id="btnHeroAnalyze" class="btn btn-primary btn-lg px-4 py-3 font-weight-bold rounded-3 shadow-lg d-flex align-items-center">
+                                    <i class="fa-solid fa-magnifying-glass-chart me-2 fa-lg"></i> Analyze Product Now
+                                </button>
+                                <button id="btnHeroLearnMore" class="btn btn-outline-light btn-lg px-4 py-3 font-weight-bold rounded-3"
+                                    data-bs-toggle="modal" data-bs-target="#authModal" onclick="DashboardController.switchAuthTab('register')">
+                                    <i class="fa-solid fa-user-check me-2"></i> Create Free Account
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center d-none d-lg-block">
+                            <div class="p-4 bg-secondary bg-opacity-25 rounded-4 border border-secondary text-start shadow">
+                                <h6 class="text-uppercase text-info font-weight-bold small mb-3">System Capabilities</h6>
+                                <div class="mb-3">
+                                    <div class="small text-muted">AI Sentiment Model</div>
+                                    <div class="h6 text-white font-weight-bold mb-0">XLM-RoBERTa Multilingual</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="small text-muted">Fuzzy FIS Dimensions</div>
+                                    <div class="h6 text-warning mb-0"><i class="fa-solid fa-check me-1"></i> Quality, Delivery, Trust</div>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">Recommendation Subsystem</div>
+                                    <div class="h6 text-success mb-0"><i class="fa-solid fa-lightbulb me-1"></i> Priority Action Engine (v1)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCT ANALYSIS WORKSPACE -->
+        <div id="analysisWorkspaceContainer" class="d-none">
+
+            <!-- 1. Product URL Input Card -->
+            <section class="card shadow-sm border-0 mb-4 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-dark font-weight-bold mb-3 d-flex align-items-center">
+                        <i class="fa-solid fa-link text-primary me-2"></i> Step 1: Analyze Daraz Product URL
+                    </h5>
+                    <form id="urlForm" onsubmit="return false;">
+                        <div class="input-group input-group-lg mb-3">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="fa-solid fa-globe"></i>
+                            </span>
+                            <input type="url" id="productUrlInput" class="form-control border-start-0"
+                                placeholder="Enter Daraz product URL (e.g. https://www.daraz.lk/products/...)"
+                                value="https://www.daraz.lk/products/p9-headphones-bluetooth-51-wireless-headband-over-ear-noise-cancelling-earpieces-stereo-sound-sports-music-earphones-with-mic-hands-free-gaming-headset-with-mftf-android-samsung-ios-apple-iphone-p47-p47m-cat-ears-solo-xb450-i402134382-s2181403040.html">
+                            <button class="btn btn-primary px-4 font-weight-bold" type="button" id="btnCheckProduct">
+                                <i class="fa-solid fa-magnifying-glass me-2"></i> Check Product
+                            </button>
+                            <button class="btn btn-outline-secondary px-3" type="button" id="btnClear">
+                                <i class="fa-solid fa-rotate-left me-1"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 2. Product Preview Card -->
+            <section id="previewCard" class="card shadow-sm border-0 mb-4 rounded-4 d-none fade-in">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-dark font-weight-bold mb-4 d-flex align-items-center">
+                        <i class="fa-solid fa-eye text-success me-2"></i> Step 2: Product Preview
+                    </h5>
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-3 text-center">
+                            <img id="previewImage" src="" alt="Product" class="img-fluid rounded-3 shadow-sm border d-none" style="max-height: 180px; object-fit: cover;">
+                        </div>
+                        <div class="col-md-6">
+                            <h4 id="previewTitle" class="h5 font-weight-bold text-dark mb-2">-</h4>
+                            <div class="d-flex flex-wrap gap-3 mb-3 text-muted small">
+                                <span><i class="fa-solid fa-store me-1 text-primary"></i> Seller: <strong id="previewSeller" class="text-dark">-</strong></span>
+                                <span><i class="fa-solid fa-star me-1 text-warning"></i> Rating: <strong id="previewRating" class="text-dark">0.0</strong> / 5</span>
+                                <span><i class="fa-solid fa-comments me-1 text-info"></i> Reviews: <strong id="previewReviews" class="text-dark">0</strong></span>
+                                <span><i class="fa-solid fa-tag me-1 text-secondary"></i> Platform: <strong id="previewPlatform" class="text-dark">Daraz</strong></span>
+                            </div>
+                            <span class="badge bg-light text-dark border px-3 py-2" id="previewCategory">Category: -</span>
+                        </div>
+                        <div class="col-md-3 text-center text-md-end d-flex flex-column gap-2 justify-content-center">
+                            <a id="btnVisitProduct" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary w-100 font-weight-bold rounded-3 py-2 shadow-sm">
+                                <i class="fa-solid fa-arrow-up-right-from-square me-2"></i> Visit Product Page
+                            </a>
+                            <button class="btn btn-success btn-lg w-100 py-3 shadow font-weight-bold rounded-3" id="btnStartAnalysis" disabled>
+                                <i class="fa-solid fa-circle-check me-2"></i> Confirm & Start Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Scraping & AI Progress Loading Stepper -->
+            <section id="progressCard" class="card shadow-sm border-0 mb-4 rounded-4 d-none fade-in">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title text-dark font-weight-bold mb-0 d-flex align-items-center">
+                            <i id="progressSpinner" class="fa-solid fa-spinner fa-spin text-primary me-2"></i> Step 3: Scraping & Pipeline Execution
+                        </h5>
+                        <span id="stageBadge" class="badge bg-primary px-3 py-2 text-uppercase fs-6">SCRAPING</span>
+                    </div>
+
+                    <!-- Pipeline Stepper Bar -->
+                    <div class="mb-4 p-3 bg-white border rounded-4 shadow-sm">
+                        <div class="row text-center align-items-center g-2 stepper-row">
+                            <div class="col stepper-step text-muted" id="step1">
+                                <div class="stepper-icon-box mb-2 mx-auto border rounded-circle d-flex align-items-center justify-content-center">
+                                    <i id="stepIcon1" class="fa-solid fa-spider"></i>
+                                </div>
+                                <span class="small font-weight-bold d-block">1. Scraper (Reviews)</span>
+                            </div>
+                            <div class="col-auto text-muted"><i class="fa-solid fa-chevron-right small"></i></div>
+                            <div class="col stepper-step text-muted" id="step2">
+                                <div class="stepper-icon-box mb-2 mx-auto border rounded-circle d-flex align-items-center justify-content-center">
+                                    <i id="stepIcon2" class="fa-solid fa-brain"></i>
+                                </div>
+                                <span class="small font-weight-bold d-block">2. XLM-R AI Sentiment</span>
+                            </div>
+                            <div class="col-auto text-muted"><i class="fa-solid fa-chevron-right small"></i></div>
+                            <div class="col stepper-step text-muted" id="step3">
+                                <div class="stepper-icon-box mb-2 mx-auto border rounded-circle d-flex align-items-center justify-content-center">
+                                    <i id="stepIcon3" class="fa-solid fa-diagram-project"></i>
+                                </div>
+                                <span class="small font-weight-bold d-block">3. Fuzzy FIS Risk</span>
+                            </div>
+                            <div class="col-auto text-muted"><i class="fa-solid fa-chevron-right small"></i></div>
+                            <div class="col stepper-step text-muted" id="step4">
+                                <div class="stepper-icon-box mb-2 mx-auto border rounded-circle d-flex align-items-center justify-content-center">
+                                    <i id="stepIcon4" class="fa-solid fa-lightbulb"></i>
+                                </div>
+                                <span class="small font-weight-bold d-block">4. Recommendations</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress mb-3" style="height: 24px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary font-weight-bold"
+                            role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+                        <span id="currentStepText"><i class="fa-solid fa-spinner fa-spin me-1"></i> Initializing...</span>
+                        <span>Elapsed: <strong id="elapsedTimeText">00:00:00</strong></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <button class="btn btn-outline-warning w-100 py-2 font-weight-bold border-2" id="btnFinishScraping">
+                            <i class="fa-solid fa-hand me-2"></i> Finish Scraping (Proceed to AI Processing)
+                        </button>
+                    </div>
+
+                    <!-- Terminal Logs Console -->
+                    <div class="bg-dark text-white rounded-3 p-3 font-monospace small" style="max-height: 220px; overflow-y: auto;" id="processingConsole">
+                        <div class="text-muted mb-1">[SYSTEM] Analysis Job Initialized.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Risk Analysis & Recommendation Results Dashboard -->
+            <section id="resultsCard" class="card shadow-sm border-0 mb-4 rounded-4 d-none fade-in">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title text-dark font-weight-bold mb-0 d-flex align-items-center">
+                            <i class="fa-solid fa-chart-pie text-success me-2"></i> Step 4: Business Risk & Recommendation Dashboard
+                        </h5>
+                        <button class="btn btn-sm btn-outline-secondary" id="btnExportReport" onclick="window.print()">
+                            <i class="fa-solid fa-download me-1"></i> Print / Export Report
+                        </button>
+                    </div>
+
+                    <!-- Overall Business Risk Index Gauge Header -->
+                    <div class="p-4 bg-light rounded-4 border mb-4 text-center">
+                        <h6 class="text-uppercase text-muted font-weight-bold tracking-wide mb-2">Overall Business Risk Index (0-100)</h6>
+                        <div class="display-3 font-weight-bold mb-2" id="businessRiskIndexVal">0.0</div>
+                        <span class="badge bg-secondary fs-5 px-4 py-2 text-uppercase" id="businessRiskLevelBadge">UNKNOWN RISK</span>
+                    </div>
+
+                    <!-- REVIEW METRICS SUMMARY CARDS -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-white rounded-4 border shadow-sm text-center">
+                                <div class="small text-muted font-weight-bold text-uppercase mb-1"><i class="fa-solid fa-comments text-primary me-1"></i> Total Reviews</div>
+                                <div class="h3 font-weight-bold text-dark mb-0" id="statTotalReviews">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-success-subtle rounded-4 border border-success-subtle text-center">
+                                <div class="small text-success-emphasis font-weight-bold text-uppercase mb-1"><i class="fa-solid fa-thumbs-up me-1"></i> Positive Reviews</div>
+                                <div class="h3 font-weight-bold text-success mb-0" id="statPositiveReviews">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-danger-subtle rounded-4 border border-danger-subtle text-center">
+                                <div class="small text-danger-emphasis font-weight-bold text-uppercase mb-1"><i class="fa-solid fa-thumbs-down me-1"></i> Negative Reviews</div>
+                                <div class="h3 font-weight-bold text-danger mb-0" id="statNegativeReviews">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-warning-subtle rounded-4 border border-warning-subtle text-center">
+                                <div class="small text-warning-emphasis font-weight-bold text-uppercase mb-1"><i class="fa-solid fa-minus me-1"></i> Neutral Reviews</div>
+                                <div class="h3 font-weight-bold text-warning-emphasis mb-0" id="statNeutralReviews">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RISK BREAKDOWN SCORE CARDS -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-white shadow-sm rounded-4 h-100 text-center p-3">
+                                <div class="card-body">
+                                    <div class="text-primary mb-2"><i class="fa-solid fa-box-open fa-2xl"></i></div>
+                                    <h6 class="text-muted font-weight-bold">Quality Risk Score</h6>
+                                    <h3 class="font-weight-bold mb-1" id="qualityRiskScore">0.0</h3>
+                                    <span class="badge bg-light text-dark border" id="qualityRiskLevel">MEDIUM</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-white shadow-sm rounded-4 h-100 text-center p-3">
+                                <div class="card-body">
+                                    <div class="text-info mb-2"><i class="fa-solid fa-truck-fast fa-2xl"></i></div>
+                                    <h6 class="text-muted font-weight-bold">Delivery Risk Score</h6>
+                                    <h3 class="font-weight-bold mb-1" id="deliveryRiskScore">0.0</h3>
+                                    <span class="badge bg-light text-dark border" id="deliveryRiskLevel">MEDIUM</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-white shadow-sm rounded-4 h-100 text-center p-3">
+                                <div class="card-body">
+                                    <div class="text-warning mb-2"><i class="fa-solid fa-shield-cat fa-2xl"></i></div>
+                                    <h6 class="text-muted font-weight-bold">Trust Risk Score</h6>
+                                    <h3 class="font-weight-bold mb-1" id="trustRiskScore">0.0</h3>
+                                    <span class="badge bg-light text-dark border" id="trustRiskLevel">MEDIUM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VISUAL ANALYTICS CHARTS (Doughnut, Bar & Radar) -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-white shadow-sm rounded-4 p-3 h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title font-weight-bold text-dark mb-3">Sentiment Distribution</h6>
+                                    <canvas id="sentimentChart" style="max-height: 240px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-white shadow-sm rounded-4 p-3 h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title font-weight-bold text-dark mb-3">Aspect Risk Scores</h6>
+                                    <canvas id="aspectChart" style="max-height: 240px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-white shadow-sm rounded-4 p-3 h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title font-weight-bold text-dark mb-3">Risk Dimension Profile</h6>
+                                    <canvas id="radarChart" style="max-height: 240px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RECOMMENDATION PANEL CONTAINER (Milestone 11.5) -->
+                    <div id="recommendationPanel"></div>
+
+                    <!-- INTERACTIVE REVIEW EXPLORER SECTION (Milestone 11.7) -->
+                    <div class="card border-0 bg-white shadow-sm rounded-4 p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="card-title font-weight-bold text-dark mb-0 d-flex align-items-center">
+                                <i class="fa-solid fa-comments text-primary me-2"></i> Interactive Review Explorer
+                            </h6>
+                        </div>
+
+                        <!-- Explorer Filter Controls -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-7">
+                                <ul class="nav nav-pills bg-light p-1 rounded-3 small" id="reviewSentimentTabs">
+                                    <li class="nav-item">
+                                        <button class="nav-link active py-1 px-3" data-sentiment="ALL">All Sentiments</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link py-1 px-3 text-success" data-sentiment="POSITIVE">Positive</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link py-1 px-3 text-danger" data-sentiment="NEGATIVE">Negative</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link py-1 px-3 text-warning-emphasis" data-sentiment="NEUTRAL">Neutral</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-5">
+                                <select id="reviewAspectSelect" class="form-select form-select-sm">
+                                    <option value="ALL">All Risk Aspects</option>
+                                    <option value="QUALITY">Quality Aspect</option>
+                                    <option value="DELIVERY">Delivery Aspect</option>
+                                    <option value="TRUST">Trust Aspect</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="reviewExplorerList" class="d-flex flex-column gap-2" style="max-height: 320px; overflow-y: auto;">
+                            <div class="text-muted small p-3 bg-light rounded-3">No customer reviews available.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 5. Historical Analysis Table -->
+            <section class="card shadow-sm border-0 mb-4 rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title text-dark font-weight-bold mb-0">
+                            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> My Analyses History
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" id="btnRefreshHistory">
+                            <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Analysis ID</th>
+                                    <th>Product Title</th>
+                                    <th>Risk Index</th>
+                                    <th>Risk Level</th>
+                                    <th>Reviews</th>
+                                    <th>Timestamp</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">Loading analysis history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container text-center small text-muted">
+            <p class="mb-1">AI Business Risk Analysis System &copy; 2026 - Production-Ready Multi-Tenant Platform</p>
+            <p class="mb-0">FastAPI | XLM-RoBERTa AI | Fuzzy Logic Engine | Recommendation Subsystem</p>
+        </div>
+    </footer>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white border-0 py-3">
+                    <h5 class="modal-title font-weight-bold d-flex align-items-center" id="authModalLabel">
+                        <i class="fa-solid fa-shield-halved text-primary me-2"></i> User Account Access
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+
+                    <div id="authModalAlert" class="alert alert-danger d-none py-2 small mb-3" role="alert">
+                        Authentication message
+                    </div>
+
+                    <ul class="nav nav-pills nav-justified mb-4 bg-light p-1 rounded-3" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active font-weight-bold rounded-3" id="loginTabBtn"
+                                data-bs-toggle="pill" data-bs-target="#loginTab" type="button" role="tab">
+                                Log In
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link font-weight-bold rounded-3" id="registerTabBtn"
+                                data-bs-toggle="pill" data-bs-target="#registerTab" type="button" role="tab">
+                                Register
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="authTabContent">
+
+                        <!-- LOGIN TAB -->
+                        <div class="tab-pane fade show active" id="loginTab" role="tabpanel">
+                            <form id="loginForm" onsubmit="return false;">
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold small">Email or Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fa-solid fa-user text-muted"></i></span>
+                                        <input type="text" id="loginIdentifier" class="form-control" placeholder="enter email or username" required>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label font-weight-bold small">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fa-solid fa-lock text-muted"></i></span>
+                                        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                                    </div>
+                                </div>
+                                <button type="button" id="btnSubmitLogin" class="btn btn-primary w-100 py-3 font-weight-bold rounded-3 shadow-sm">
+                                    <i class="fa-solid fa-right-to-bracket me-2"></i> Log In to Account
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- REGISTER TAB -->
+                        <div class="tab-pane fade" id="registerTab" role="tabpanel">
+                            <form id="registerForm" onsubmit="return false;">
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold small">Full Name (Optional)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fa-solid fa-id-card text-muted"></i></span>
+                                        <input type="text" id="registerFullName" class="form-control" placeholder="John Doe">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold small">Email Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fa-solid fa-envelope text-muted"></i></span>
+                                        <input type="email" id="registerEmail" class="form-control" placeholder="name@example.com" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold small">Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fa-solid fa-at text-muted"></i></span>
+                                        <input type="text" id="registerUsername" class="form-control" placeholder="johndoe" required minlength="3">
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label font-weight-bold small">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fa-solid fa-lock text-muted"></i></span>
+                                        <input type="password" id="registerPassword" class="form-control" placeholder="at least 6 characters" required minlength="6">
+                                    </div>
+                                </div>
+                                <button type="button" id="btnSubmitRegister" class="btn btn-success w-100 py-3 font-weight-bold rounded-3 shadow-sm">
+                                    <i class="fa-solid fa-user-plus me-2"></i> Create Account
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Modular Frontend JS Architecture -->
+    <script src="/static/js/api.js?v=3.0.0"></script>
+    <script src="/static/js/loading.js?v=3.0.0"></script>
+    <script src="/static/js/charts.js?v=3.0.0"></script>
+    <script src="/static/js/recommendations.js?v=3.0.0"></script>
+    <script src="/static/js/reviews.js?v=3.0.0"></script>
+    <script src="/static/js/dashboard.js?v=3.0.0"></script>
+    <script src="/static/js/app.js?v=3.0.0"></script>
+</body>
+
+</html>

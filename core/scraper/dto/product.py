@@ -29,4 +29,14 @@ class Product:
 
     category: Optional[str] = None
 
+    seller_name: Optional[str] = "Daraz Verified Seller"
+
+    overall_rating: float = 0.0
+
+    total_reviews: int = 0
+
+    image_url: Optional[str] = None
+
+    platform: str = "Daraz"
+
     reviews: list[ScrapedReview] = field(default_factory=list)

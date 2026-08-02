@@ -1,0 +1,23 @@
+[
+  {
+    "id": "insight_delivery_medium",
+    "category": "INSIGHT",
+    "template": "Customer feedback indicates an increase in delivery-related issues, including delayed shipments and order fulfillment concerns. Improving delivery performance can enhance customer satisfaction and reduce negative reviews.",
+    "placeholders": [],
+    "enabled": true
+  },
+  {
+    "id": "insight_quality_high",
+    "category": "INSIGHT",
+    "template": "Customer feedback highlights significant concerns about product quality, including defects, durability, and overall reliability. Addressing these issues promptly can improve customer confidence and protect your business reputation.",
+    "placeholders": [],
+    "enabled": true
+  },
+  {
+    "id": "insight_trust_high",
+    "category": "INSIGHT",
+    "template": "Customer feedback suggests that trust in your business is being affected by support experience, return policies, or confidence in your products. Improving transparency and customer support can strengthen customer relationships and encourage repeat purchases.",
+    "placeholders": [],
+    "enabled": true
+  }
+]

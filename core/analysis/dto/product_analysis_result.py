@@ -16,6 +16,7 @@ class ProductAnalysisResult:
 
     product: Product
     aggregation_result: AggregationResult
+    predictions: Optional[Any] = None
 
     # These will be populated in later phases
     business_risk: Optional[Any] = None

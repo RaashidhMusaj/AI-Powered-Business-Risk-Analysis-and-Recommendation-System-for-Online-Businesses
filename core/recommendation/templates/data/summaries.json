@@ -1,0 +1,27 @@
+[
+  {
+    "id": "summary_high_quality",
+    "category": "SUMMARY",
+    "template": "Our analysis indicates a high level of risk related to {aspect}. Customer feedback suggests this area requires immediate attention to improve customer satisfaction and protect your business reputation.",
+    "placeholders": [
+      "aspect"
+    ],
+    "enabled": true
+  },
+  {
+    "id": "summary_medium_risk",
+    "category": "SUMMARY",
+    "template": "Our analysis has identified a moderate level of risk in {aspect}. Addressing these concerns early can improve customer experience and help prevent more serious issues in the future.",
+    "placeholders": [
+      "aspect"
+    ],
+    "enabled": true
+  },
+  {
+    "id": "summary_healthy_performance",
+    "category": "SUMMARY",
+    "template": "Great news! Customer feedback indicates your business is performing well, with low risk across the key business areas. Continue maintaining your current standards to keep customers satisfied and support long-term growth.",
+    "placeholders": [],
+    "enabled": true
+  }
+]

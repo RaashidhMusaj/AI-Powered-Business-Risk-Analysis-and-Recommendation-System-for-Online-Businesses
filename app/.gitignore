@@ -1,0 +1,40 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Local environment/config secrets
+.env
+.env.*
+local_settings.py
+secrets.json
+credentials.json
+
+# Runtime and local data
+logs/
+tmp/
+cache/
+*.sqlite3
+*.db
+uploads/
+media/
+
+# Test and coverage outputs
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# IDE and OS clutter
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo

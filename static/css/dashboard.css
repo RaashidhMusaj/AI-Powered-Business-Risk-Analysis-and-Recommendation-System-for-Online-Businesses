@@ -1,0 +1,252 @@
+/* 
+ * Modern UI & Dashboard Styling
+ * Glassmorphism, animations, risk score badges, recommendations panel, and stepper theme.
+ */
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    --dark-glass-bg: rgba(33, 37, 41, 0.95);
+    --card-border-radius: 1rem;
+    --transition-speed: 0.3s ease;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* Glassmorphism Card Effects */
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.hero-banner {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    border-radius: 1.25rem;
+}
+
+/* Stepper Progress Bar */
+.stepper-row .stepper-step {
+    transition: all var(--transition-speed);
+}
+
+.stepper-icon-box {
+    width: 48px;
+    height: 48px;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-size: 1.2rem;
+    transition: all var(--transition-speed);
+}
+
+.stepper-step.active .stepper-icon-box {
+    background-color: #0d6efd;
+    color: #ffffff;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 12px rgba(13, 110, 253, 0.4);
+}
+
+.stepper-step.completed .stepper-icon-box {
+    background-color: #198754;
+    color: #ffffff;
+    border-color: #198754 !important;
+}
+
+/* Recommendation Panel Cards */
+.recommendation-card {
+    border-left: 5px solid #0d6efd;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.priority-immediate {
+    border-left-color: #dc3545 !important;
+}
+
+.priority-high {
+    border-left-color: #fd7e14 !important;
+}
+
+.priority-medium {
+    border-left-color: #ffc107 !important;
+}
+
+.priority-normal, .priority-low {
+    border-left-color: #198754 !important;
+}
+
+/* Priority Badges */
+.badge-priority-immediate {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.badge-priority-high {
+    background-color: #fd7e14;
+    color: #fff;
+}
+
+.badge-priority-medium {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-priority-normal, .badge-priority-low {
+    background-color: #198754;
+    color: #fff;
+}
+
+/* Aspect Tags */
+.aspect-tag-quality {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+    border: 1px solid #b6d4fe;
+}
+
+.aspect-tag-delivery {
+    background-color: #cff4fc;
+    color: #055160;
+    border: 1px solid #9eeaf9;
+}
+
+.aspect-tag-trust {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffe69c;
+}
+
+.aspect-tag-general {
+    background-color: #e2e3e5;
+    color: #41464b;
+    border: 1px solid #c4c8cb;
+}
+
+/* Review Explorer Cards */
+.review-item {
+    transition: background-color var(--transition-speed);
+}
+
+.review-item:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   Executive Report Print & PDF Export Stylesheet (@media print)
+   ========================================================================== */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 1.2cm 1.5cm 1.5cm 1.5cm;
+    }
+
+    body {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-size: 10pt !important;
+        line-height: 1.5 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Hide non-report Web UI chrome controls */
+    header,
+    footer,
+    nav,
+    .navbar,
+    #landingHeroSection,
+    #progressCard,
+    #previewCard,
+    #btnExportReport,
+    #reviewSentimentTabs,
+    #reviewAspectSelect,
+    .btn,
+    .modal,
+    .d-none-print {
+        display: none !important;
+    }
+
+    /* Expand main results container for full width print */
+    #analysisWorkspaceContainer,
+    #resultsCard {
+        display: block !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Formal Executive Report Document Header */
+    #resultsCard::before {
+        content: "AI BUSINESS RISK ANALYSIS EXECUTIVE REPORT";
+        display: block;
+        font-size: 16pt;
+        font-weight: 800;
+        color: #0f172a;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding-bottom: 8px;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #0d6efd;
+    }
+
+    /* Page-break containment for individual cards & panels */
+    .card,
+    .recommendation-card,
+    .review-item,
+    #recommendationPanel,
+    .row {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* High contrast borders and badges for clear print layout */
+    .border {
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .badge {
+        border: 1px solid #64748b !important;
+        font-weight: 700 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Expand scrollable review list containers for full print readability */
+    #reviewExplorerList,
+    #negativeReviewsList {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Chart Canvas Sizing for Print */
+    canvas {
+        max-height: 220px !important;
+    }
+}

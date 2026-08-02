@@ -1,0 +1,46 @@
+[
+  {
+    "id": "trust_high_001",
+    "aspect": "TRUST",
+    "risk_level": "HIGH",
+    "title": "Restore Customer Trust and Improve Support",
+    "description": "Many customers have reported problems with customer service, returns, or product authenticity. Addressing these concerns quickly is essential to rebuild trust, improve your reputation, and reduce negative reviews.",
+    "actions": [
+      "Respond to customer questions and complaints as quickly as possible",
+      "Make your return and refund process simple, clear, and customer-friendly",
+      "Clearly display product warranties, guarantees, and seller verification information",
+      "Resolve customer issues professionally to increase confidence in your business"
+    ],
+    "priority": "IMMEDIATE",
+    "tags": [
+      "trust",
+      "customer_support",
+      "returns",
+      "seller_reputation"
+    ],
+    "version": 1,
+    "enabled": true
+  },
+  {
+    "id": "trust_medium_001",
+    "aspect": "TRUST",
+    "risk_level": "MEDIUM",
+    "title": "Improve Transparency and Customer Communication",
+    "description": "Some customers are unsure about your product details, return policy, or purchasing process. Providing clearer information can improve customer confidence and reduce misunderstandings.",
+    "actions": [
+      "Update your product description with clear and accurate information",
+      "Clearly explain your return, refund, and exchange policies",
+      "Answer common customer questions in the product description or FAQ section",
+      "Keep customers informed throughout the ordering and delivery process"
+    ],
+    "priority": "HIGH",
+    "tags": [
+      "trust",
+      "transparency",
+      "customer_communication",
+      "faq"
+    ],
+    "version": 1,
+    "enabled": true
+  }
+]

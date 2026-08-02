@@ -1,0 +1,27 @@
+[
+  {
+    "id": "action_quality_high",
+    "category": "ACTION",
+    "template": "Make improving {aspect} your highest priority. Start by addressing the recommended actions below to reduce customer complaints and improve product quality.",
+    "placeholders": [
+      "aspect"
+    ],
+    "enabled": true
+  },
+  {
+    "id": "action_delivery_high",
+    "category": "ACTION",
+    "template": "Focus on improving {aspect} by resolving the key issues identified below. Faster deliveries and better order handling can significantly improve customer satisfaction.",
+    "placeholders": [
+      "aspect"
+    ],
+    "enabled": true
+  },
+  {
+    "id": "action_general_maintenance",
+    "category": "ACTION",
+    "template": "Your business is performing well. Continue following the recommended practices below to maintain customer satisfaction and support long-term business growth.",
+    "placeholders": [],
+    "enabled": true
+  }
+]
