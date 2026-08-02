@@ -1,14 +1,10 @@
 import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
 
 
-def test_user_registration_and_login():
+def test_user_registration_and_login(client):
     test_email = "testuser_tenant@example.com"
     test_username = "tenant_user_1"
-    test_password = "securepassword123"
+    test_password = "SecurePassword123!"
 
     # 1. Test Register
     reg_response = client.post(
@@ -29,6 +25,7 @@ def test_user_registration_and_login():
         data = reg_response.json()["data"]
         assert "accessToken" in data
         assert data["username"] == test_username
+        assert data["role"] == "seller"
 
     # 2. Test Login
     login_response = client.post(
@@ -41,6 +38,7 @@ def test_user_registration_and_login():
     assert login_response.status_code == 200, f"Login failed: {login_response.text}"
     token_data = login_response.json()["data"]
     token = token_data["accessToken"]
+    assert token_data["role"] == "seller"
 
     # 3. Test Profile with Bearer token
     profile_response = client.get(
@@ -51,20 +49,74 @@ def test_user_registration_and_login():
     profile_data = profile_response.json()["data"]
     assert profile_data["username"] == test_username
     assert profile_data["email"] == test_email
+    assert profile_data["role"] == "seller"
 
 
-def test_unauthenticated_access_rejected():
+def test_password_strength_validation(client):
+    # 1. Short password (< 8 chars)
+    r1 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "short@example.com", "username": "short_user", "password": "Sh1!"}
+    )
+    assert r1.status_code == 422 or r1.status_code == 400
+
+    # 2. Missing uppercase
+    r2 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "noupper@example.com", "username": "noupper_user", "password": "lowercase123!"}
+    )
+    assert r2.status_code == 422 or r2.status_code == 400
+
+    # 3. Missing special char
+    r3 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "nospecial@example.com", "username": "nospecial_user", "password": "NoSpecialChar123"}
+    )
+    assert r3.status_code == 422 or r3.status_code == 400
+
+
+def test_account_lockout_mechanism(client):
+    lock_email = "lockout_test@example.com"
+    lock_username = "lockout_user"
+    valid_password = "ValidPassword123!"
+    wrong_password = "WrongPassword123!"
+
+    # 1. Register test user
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={"email": lock_email, "username": lock_username, "password": valid_password}
+    )
+    assert reg.status_code in [200, 400]
+
+    # 2. Fail login 5 consecutive times
+    for i in range(4):
+        res = client.post("/api/v1/auth/login", json={"emailOrUsername": lock_username, "password": wrong_password})
+        assert res.status_code == 401
+        assert "Invalid" in res.json().get("message", "")
+
+    # 5th failed attempt triggers account lockout
+    res5 = client.post("/api/v1/auth/login", json={"emailOrUsername": lock_username, "password": wrong_password})
+    assert res5.status_code == 401
+    assert "locked" in res5.json().get("message", "").lower()
+
+    # 6th attempt with CORRECT password while locked should still be rejected
+    res_locked = client.post("/api/v1/auth/login", json={"emailOrUsername": lock_username, "password": valid_password})
+    assert res_locked.status_code == 401
+    assert "locked" in res_locked.json().get("message", "").lower()
+
+
+def test_unauthenticated_access_rejected(client):
     # Attempt to access protected history endpoint without token
     response = client.get("/api/v1/history")
     assert response.status_code == 401
     assert "detail" in response.json() or "message" in response.json()
 
 
-def test_tenant_data_isolation():
+def test_tenant_data_isolation(client):
     # Register User 1
     user1_email = "tenantA@example.com"
     user1_username = "tenant_a"
-    user1_pass = "pass123456"
+    user1_pass = "SecurePass123!"
 
     r1 = client.post(
         "/api/v1/auth/register",
@@ -79,7 +131,7 @@ def test_tenant_data_isolation():
     # Register User 2
     user2_email = "tenantB@example.com"
     user2_username = "tenant_b"
-    user2_pass = "pass123456"
+    user2_pass = "SecurePass123!"
 
     r2 = client.post(
         "/api/v1/auth/register",

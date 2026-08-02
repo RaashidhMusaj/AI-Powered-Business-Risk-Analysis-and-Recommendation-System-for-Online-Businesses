@@ -29,7 +29,7 @@ def test_auth_register_and_login_live(client):
         json={
             "email": "testendpoint@example.com",
             "username": "testendpoint_user",
-            "password": "password123",
+            "password": "SecurePassword123!",
             "fullName": "Endpoint Tester"
         }
     )
@@ -38,7 +38,7 @@ def test_auth_register_and_login_live(client):
     else:
         login_res = client.post(
             "/api/v1/auth/login",
-            json={"emailOrUsername": "testendpoint_user", "password": "password123"}
+            json={"emailOrUsername": "testendpoint_user", "password": "SecurePassword123!"}
         )
         assert login_res.status_code == 200
         token = login_res.json()["data"]["accessToken"]
@@ -57,7 +57,7 @@ def test_analysis_invalid_url_with_auth(client):
         json={
             "email": "invalidurl_test@example.com",
             "username": "invalidurl_user",
-            "password": "password123"
+            "password": "SecurePassword123!"
         }
     )
     if reg_res.status_code == 200:
@@ -65,7 +65,7 @@ def test_analysis_invalid_url_with_auth(client):
     else:
         login_res = client.post(
             "/api/v1/auth/login",
-            json={"emailOrUsername": "invalidurl_user", "password": "password123"}
+            json={"emailOrUsername": "invalidurl_user", "password": "SecurePassword123!"}
         )
         assert login_res.status_code == 200
         token = login_res.json()["data"]["accessToken"]

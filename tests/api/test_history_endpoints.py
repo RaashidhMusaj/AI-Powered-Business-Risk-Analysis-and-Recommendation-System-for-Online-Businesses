@@ -13,7 +13,7 @@ def seeded_client(client, db_session):
     user = User(
         email="seeded@example.com",
         username="seeded_user",
-        hashed_password=hash_password("pass123"),
+        hashed_password=hash_password("SecurePassword123!"),
         is_active=True
     )
     db_session.add(user)

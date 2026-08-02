@@ -30,6 +30,9 @@ def test_user(db_session):
     )
     db_session.add(user)
     db_session.commit()
+    assert user.role == "seller"
+    assert user.failed_login_attempts == 0
+    assert user.locked_until is None
     return user
 
 
