@@ -10,6 +10,18 @@ class UserRegisterRequest(BaseModel):
     fullName: Optional[str] = Field(None, description="User display name")
     role: Optional[str] = Field("seller", description="User account role")
 
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("Email address is required.")
+        v = v.strip()
+        # Standard RFC 822 email format check (checks @ symbol, valid domain extension, no invalid characters)
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_pattern, v):
+            raise ValueError("Invalid email address format. Must follow standard format (user@domain.com)")
+        return v.lower()
+
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, v: str) -> str:

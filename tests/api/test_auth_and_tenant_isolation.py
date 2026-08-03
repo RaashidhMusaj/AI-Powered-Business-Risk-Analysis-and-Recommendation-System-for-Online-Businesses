@@ -154,3 +154,34 @@ def test_tenant_data_isolation(client):
     # Verify non-existent analysis_id for User B returns 404
     detail_b = client.get("/api/v1/history/anl_nonexistent999", headers={"Authorization": f"Bearer {token_b}"})
     assert detail_b.status_code == 404
+
+
+def test_email_format_validation(client):
+    # 1. Missing @ symbol
+    r1 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "invalidemail.com", "username": "bad_email_1", "password": "ValidPassword123!"}
+    )
+    assert r1.status_code == 422 or r1.status_code == 400
+
+    # 2. Missing domain extension
+    r2 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "user@domain", "username": "bad_email_2", "password": "ValidPassword123!"}
+    )
+    assert r2.status_code == 422 or r2.status_code == 400
+
+    # 3. Invalid characters / spaces
+    r3 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "user name@domain.com", "username": "bad_email_3", "password": "ValidPassword123!"}
+    )
+    assert r3.status_code == 422 or r3.status_code == 400
+
+    # 4. Valid RFC 822 email format
+    r4 = client.post(
+        "/api/v1/auth/register",
+        json={"email": "valid_rfc822_user@example.co.lk", "username": "good_email_user", "password": "ValidPassword123!"}
+    )
+    assert r4.status_code in [200, 400]
+

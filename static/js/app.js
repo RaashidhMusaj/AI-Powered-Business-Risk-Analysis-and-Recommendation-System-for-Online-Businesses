@@ -132,6 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailPattern.test(email)) {
+            DashboardController.showAuthAlert('Please enter a valid email address following RFC 822 format (e.g., user@example.com).', 'danger');
+            return;
+        }
+
         DashboardController.hideAuthAlert();
         btnSubmitRegister.disabled = true;
         btnSubmitRegister.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Creating account...';
