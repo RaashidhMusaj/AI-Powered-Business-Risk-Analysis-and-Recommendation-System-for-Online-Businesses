@@ -193,6 +193,10 @@ const DashboardController = {
         // Render Visual Charts
         ChartManager.renderAllCharts(stats, metrics, risks);
 
+        // Render Multi-Aspect Trend Analytics (FR 38 & FR 39)
+        TrendManager.loadTrendChart(resultData.productId || (resultData.product ? resultData.product.id : null));
+        TrendManager.bindAspectToggles();
+
         // Render Recommendation Panel
         RecommendationManager.renderRecommendationPanel(resultData.recommendation);
 
@@ -297,4 +301,99 @@ const DashboardController = {
     }
 };
 
+const TrendManager = {
+    async loadTrendChart(productId = null) {
+        try {
+            const targetId = (productId && productId !== 'undefined' && productId !== 'null') ? productId : 'all';
+            const res = await API.getProductTrend(targetId, 20);
+            if (res && res.data) {
+                ChartManager.renderMultiAspectTrendChart(res.data);
+            }
+        } catch (e) {
+            console.warn('[TrendManager] Could not load trend chart:', e);
+        }
+    },
+
+    bindAspectToggles() {
+        const chkDel = document.getElementById('chkTrendDelivery');
+        const chkQual = document.getElementById('chkTrendQuality');
+        const chkTrust = document.getElementById('chkTrendTrust');
+        const chkBRI = document.getElementById('chkTrendBRI');
+
+        if (chkDel) chkDel.onchange = (e) => ChartManager.toggleTrendDataset(0, e.target.checked);
+        if (chkQual) chkQual.onchange = (e) => ChartManager.toggleTrendDataset(1, e.target.checked);
+        if (chkTrust) chkTrust.onchange = (e) => ChartManager.toggleTrendDataset(2, e.target.checked);
+        if (chkBRI) chkBRI.onchange = (e) => ChartManager.toggleTrendDataset(3, e.target.checked);
+    }
+};
+
+const ComparisonManager = {
+    async loadComparisonOptions(historyItems = []) {
+        const fromSel = document.getElementById('compareFromSelect');
+        const toSel = document.getElementById('compareToSelect');
+        if (!fromSel || !toSel) return;
+
+        fromSel.innerHTML = '';
+        toSel.innerHTML = '';
+
+        if (!historyItems || historyItems.length === 0) {
+            fromSel.innerHTML = '<option value="">No historical runs available</option>';
+            toSel.innerHTML = '<option value="">No historical runs available</option>';
+            return;
+        }
+
+        historyItems.forEach((item, idx) => {
+            const bri = item.businessRiskIndex ?? item.overallBusinessRiskIndex ?? 0;
+            const briText = typeof bri === 'number' ? bri.toFixed(1) : bri;
+            const dateObj = item.createdAt ? new Date(item.createdAt) : null;
+            const formattedDate = dateObj && !isNaN(dateObj) 
+                ? dateObj.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) 
+                : (item.created_at || item.createdAt || 'Recent Run');
+            const label = `${formattedDate} - BRI: ${briText} (${item.businessRiskLevel || 'MEDIUM'})`;
+            fromSel.innerHTML += `<option value="${item.analysisId}" ${idx === 1 || historyItems.length === 1 ? 'selected' : ''}>${label}</option>`;
+            toSel.innerHTML += `<option value="${item.analysisId}" ${idx === 0 ? 'selected' : ''}>${label}</option>`;
+        });
+
+        this.bindExecute();
+    },
+
+    bindExecute() {
+        const btn = document.getElementById('btnExecuteCompare');
+        if (btn) {
+            btn.onclick = async () => {
+                const fromId = document.getElementById('compareFromSelect')?.value;
+                const toId = document.getElementById('compareToSelect')?.value;
+                if (!fromId || !toId) return;
+
+                try {
+                    const res = await API.compareAnalyses('all', fromId, toId);
+                    if (res && res.data && res.data.deltas) {
+                        const deltas = res.data.deltas;
+                        const container = document.getElementById('comparisonResultsContainer');
+                        if (container) container.classList.remove('d-none');
+
+                        this.setDeltaValue('deltaDeliveryVal', deltas.delivery);
+                        this.setDeltaValue('deltaQualityVal', deltas.quality);
+                        this.setDeltaValue('deltaTrustVal', deltas.trust);
+                        this.setDeltaValue('deltaBRIVal', deltas.bri);
+                    }
+                } catch (e) {
+                    console.error('[ComparisonManager] Comparison failed:', e);
+                }
+            };
+        }
+    },
+
+    setDeltaValue(elemId, val) {
+        const elem = document.getElementById(elemId);
+        if (!elem) return;
+        const num = parseFloat(val) || 0;
+        const sign = num > 0 ? '+' : '';
+        elem.textContent = `${sign}${num.toFixed(1)}`;
+        elem.className = `h4 font-weight-bold mb-0 ${num > 0 ? 'text-danger' : num < 0 ? 'text-success' : 'text-muted'}`;
+    }
+};
+
 window.DashboardController = DashboardController;
+window.TrendManager = TrendManager;
+window.ComparisonManager = ComparisonManager;

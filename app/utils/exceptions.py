@@ -69,6 +69,51 @@ async def business_exception_handler(request: Request, exc: BaseBusinessExceptio
     )
 
 
+from fastapi.exceptions import RequestValidationError
+
+
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Custom exception handler for RequestValidationError (422 Unprocessable Content).
+    Extracts clean human-readable error messages for schema/validation errors.
+    """
+    request_id = getattr(request.state, "request_id", str(uuid.uuid4()))
+    raw_errors = exc.errors()
+
+    messages = []
+    formatted_errors = []
+    for err in raw_errors:
+        msg = str(err.get("msg", ""))
+        if msg.startswith("Value error, "):
+            msg = msg[len("Value error, "):]
+        messages.append(msg)
+        formatted_errors.append({
+            "type": str(err.get("type", "value_error")),
+            "loc": [str(x) for x in err.get("loc", [])],
+            "msg": msg,
+        })
+
+    clean_msg = "; ".join(messages) if messages else "Validation error"
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "success": False,
+            "message": clean_msg,
+            "data": None,
+            "error": {
+                "type": "ValidationError",
+                "details": formatted_errors
+            },
+            "meta": {
+                "requestId": request_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "version": settings.APP_VERSION
+            }
+        }
+    )
+
+
 async def general_exception_handler(request: Request, exc: Exception):
     """
     Global catch-all exception handler.

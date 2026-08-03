@@ -1,12 +1,13 @@
 /**
- * Charts & Visual Analytics Renderer Component (Milestone 11.4 & 11.6)
- * Renders Chart.js Radar, Doughnut, Bar, and Gauge visualizations.
+ * Charts & Visual Analytics Renderer Component (Milestone 11.4, 11.6, FR 38 & FR 39)
+ * Renders Chart.js Radar, Doughnut, Bar, Gauge, and Multi-Aspect Time-Series Line Visualizations.
  */
 const ChartManager = {
     instances: {
         sentiment: null,
         aspect: null,
-        radar: null
+        radar: null,
+        trend: null
     },
 
     extractScore(val) {
@@ -18,8 +19,6 @@ const ChartManager = {
 
     renderAllCharts(stats = {}, metrics = {}, risks = {}) {
         this.renderSentimentChart(stats, metrics);
-        this.renderAspectBarChart(stats, risks);
-        this.renderRadarChart(risks);
     },
 
     renderSentimentChart(stats, metrics) {
@@ -54,78 +53,89 @@ const ChartManager = {
         }
     },
 
-    renderAspectBarChart(stats, risks = {}) {
-        const aspectCtx = document.getElementById('aspectChart');
-        if (aspectCtx && window.Chart) {
-            if (this.instances.aspect) this.instances.aspect.destroy();
+    /**
+     * Renders Multi-Aspect Time-Series Trend Line Chart (FR 38 & FR 39)
+     * Consumes array of objects: [{"date": "...", "delivery": 52, "quality": 41, "trust": 33, "bri": 44}]
+     */
+    renderMultiAspectTrendChart(trendPoints = []) {
+        const trendCtx = document.getElementById('multiAspectTrendChart');
+        if (!trendCtx || !window.Chart) return;
 
-            const qScore = this.extractScore(risks.qualityRisk ?? risks.quality_risk ?? risks.qualityRiskScore);
-            const dScore = this.extractScore(risks.deliveryRisk ?? risks.delivery_risk ?? risks.deliveryRiskScore);
-            const tScore = this.extractScore(risks.trustRisk ?? risks.trust_risk ?? risks.trustRiskScore);
-
-            this.instances.aspect = new Chart(aspectCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Quality Risk', 'Delivery Risk', 'Trust Risk'],
-                    datasets: [{
-                        label: 'Risk Score (0-100)',
-                        data: [qScore, dScore, tScore],
-                        backgroundColor: ['#0d6efd', '#0dcaf0', '#ffc107'],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, max: 100 }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
+        if (this.instances.trend) {
+            this.instances.trend.destroy();
         }
+
+        const labels = trendPoints.map(p => p.date || p.analysisId || 'Run');
+        const deliveryData = trendPoints.map(p => p.delivery ?? 0);
+        const qualityData = trendPoints.map(p => p.quality ?? 0);
+        const trustData = trendPoints.map(p => p.trust ?? 0);
+        const briData = trendPoints.map(p => p.bri ?? 0);
+
+        this.instances.trend = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Delivery Risk',
+                        data: deliveryData,
+                        borderColor: '#0dcaf0',
+                        backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                        tension: 0.3,
+                        pointRadius: 5,
+                        hidden: false
+                    },
+                    {
+                        label: 'Quality Risk',
+                        data: qualityData,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.3,
+                        pointRadius: 5,
+                        hidden: false
+                    },
+                    {
+                        label: 'Trust Risk',
+                        data: trustData,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.3,
+                        pointRadius: 5,
+                        hidden: false
+                    },
+                    {
+                        label: 'BRI Index',
+                        data: briData,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.15)',
+                        borderDash: [5, 5],
+                        borderWidth: 3,
+                        tension: 0.3,
+                        pointRadius: 6,
+                        hidden: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { title: { display: true, text: 'Analysis Timeline' } },
+                    y: { beginAtZero: true, max: 100, title: { display: true, text: 'Risk Score (0-100)' } }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { enabled: true }
+                }
+            }
+        });
     },
 
-    renderRadarChart(risks = {}) {
-        const radarCtx = document.getElementById('radarChart');
-        if (radarCtx && window.Chart) {
-            if (this.instances.radar) this.instances.radar.destroy();
-
-            const qScore = this.extractScore(risks.qualityRisk ?? risks.quality_risk ?? risks.qualityRiskScore);
-            const dScore = this.extractScore(risks.deliveryRisk ?? risks.delivery_risk ?? risks.deliveryRiskScore);
-            const tScore = this.extractScore(risks.trustRisk ?? risks.trust_risk ?? risks.trustRiskScore);
-            const briVal = this.extractScore(risks.businessRiskIndex ?? risks.business_risk_index);
-
-            this.instances.radar = new Chart(radarCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['Quality Risk', 'Delivery Risk', 'Trust Risk', 'Overall Business Index'],
-                    datasets: [{
-                        label: 'Risk Distribution Profile',
-                        data: [qScore, dScore, tScore, briVal],
-                        fill: true,
-                        backgroundColor: 'rgba(13, 110, 253, 0.2)',
-                        borderColor: '#0d6efd',
-                        pointBackgroundColor: '#0d6efd',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#0d6efd'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { display: true },
-                            suggestedMin: 0,
-                            suggestedMax: 100
-                        }
-                    }
-                }
-            });
+    toggleTrendDataset(index, visible) {
+        if (this.instances.trend && this.instances.trend.data.datasets[index]) {
+            this.instances.trend.data.datasets[index].hidden = !visible;
+            this.instances.trend.update();
         }
     }
 };

@@ -22,6 +22,8 @@ class Product(BaseEntity):
     total_reviews = Column(Integer, default=0, nullable=False)
     seller_name = Column(String(256), nullable=True)
     image_url = Column(String(2048), nullable=True)
+    external_product_id = Column(String(128), nullable=True)
+    current_price = Column(String(64), nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="products")

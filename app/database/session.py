@@ -73,6 +73,10 @@ def ensure_schema_migrations():
                     conn.execute(text("ALTER TABLE products ADD COLUMN seller_name VARCHAR(256)"))
                 if "image_url" not in cols:
                     conn.execute(text("ALTER TABLE products ADD COLUMN image_url VARCHAR(2048)"))
+                if "external_product_id" not in cols:
+                    conn.execute(text("ALTER TABLE products ADD COLUMN external_product_id VARCHAR(128)"))
+                if "current_price" not in cols:
+                    conn.execute(text("ALTER TABLE products ADD COLUMN current_price VARCHAR(64)"))
                 if "user_id" not in cols:
                     db_logger.info("Migrating products table: adding missing 'user_id' column...")
                     conn.execute(text(f"ALTER TABLE products ADD COLUMN user_id {col_type}"))
@@ -81,6 +85,10 @@ def ensure_schema_migrations():
             # Column additions for analyses
             if "analyses" in table_names:
                 cols = [c["name"].lower() for c in inspector.get_columns("analyses")]
+                if "business_risk_snapshot" not in cols:
+                    conn.execute(text("ALTER TABLE analyses ADD COLUMN business_risk_snapshot JSON"))
+                if "recommendation_snapshot" not in cols:
+                    conn.execute(text("ALTER TABLE analyses ADD COLUMN recommendation_snapshot JSON"))
                 if "user_id" not in cols:
                     db_logger.info("Migrating analyses table: adding missing 'user_id' column...")
                     conn.execute(text(f"ALTER TABLE analyses ADD COLUMN user_id {col_type}"))

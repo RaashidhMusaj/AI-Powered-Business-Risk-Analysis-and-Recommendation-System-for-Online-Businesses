@@ -21,7 +21,7 @@ def test_start_analysis_job(client):
         json={
             "email": "demoworkflow@example.com",
             "username": "demoworkflow_user",
-            "password": "password123",
+            "password": "SecurePassword123!",
             "fullName": "Demo Workflow User"
         }
     )
@@ -30,7 +30,7 @@ def test_start_analysis_job(client):
     else:
         login_res = client.post(
             "/api/v1/auth/login",
-            json={"emailOrUsername": "demoworkflow_user", "password": "password123"}
+            json={"emailOrUsername": "demoworkflow_user", "password": "SecurePassword123!"}
         )
         assert login_res.status_code == 200
         token = login_res.json()["data"]["accessToken"]

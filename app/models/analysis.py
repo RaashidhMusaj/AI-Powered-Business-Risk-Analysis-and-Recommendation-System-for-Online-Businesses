@@ -39,6 +39,8 @@ class Analysis(BaseEntity):
     aspect_statistics = Column(JSON, nullable=True)
     confidence_statistics = Column(JSON, nullable=True)
     risk_breakdown = Column(JSON, nullable=True)
+    business_risk_snapshot = Column(JSON, nullable=True)
+    recommendation_snapshot = Column(JSON, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="analyses")

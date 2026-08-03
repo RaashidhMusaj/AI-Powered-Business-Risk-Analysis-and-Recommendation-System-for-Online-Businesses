@@ -143,6 +143,19 @@ const API = {
         return await this.request(`/api/v1/history/${analysisId}`, {
             method: 'DELETE'
         });
+    },
+
+    // --- Products & Trend Analytics Endpoints (Phase 12) ---
+    async getProducts(page = 1, limit = 20) {
+        return await this.request(`/api/v1/products?page=${page}&limit=${limit}`);
+    },
+
+    async getProductTrend(productId, limit = 20) {
+        return await this.request(`/api/v1/products/${productId}/trend?limit=${limit}`);
+    },
+
+    async compareAnalyses(productId, fromId, toId) {
+        return await this.request(`/api/v1/products/${productId}/compare?from=${fromId}&to=${toId}`);
     }
 };
 

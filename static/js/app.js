@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await API.checkProduct(url);
             if (res.success && res.data) {
-                const prod = res.data.product || {};
+                const prod = res.data.product || res.data || {};
                 
                 const titleElem = document.getElementById('previewTitle');
                 const sellerElem = document.getElementById('previewSeller');
@@ -196,20 +196,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const visitBtn = document.getElementById('btnVisitProduct');
                 const imageElem = document.getElementById('previewImage');
 
-                if (titleElem) titleElem.textContent = prod.title || 'E-Commerce Product';
-                if (sellerElem) sellerElem.textContent = prod.sellerName || prod.seller || 'Verified Merchant';
-                if (ratingElem) ratingElem.textContent = prod.overallRating ?? '4.5';
-                if (reviewsElem) reviewsElem.textContent = prod.reviewCount || prod.totalReviews || '24';
-                if (categoryElem) categoryElem.textContent = `Category: ${prod.category || 'Consumer Electronics'}`;
+                const extractedTitle = prod.title || prod.productTitle || prod.product_name;
+                const extractedSeller = prod.seller || prod.sellerName || prod.seller_name;
+                const rawRating = prod.overallRating ?? prod.rating ?? prod.overall_rating;
+                const ratingVal = typeof rawRating === 'number' ? rawRating : parseFloat(rawRating) || 0.0;
+                const extractedReviews = prod.totalReviews ?? prod.reviewCount ?? prod.total_reviews ?? 0;
+                const extractedCategory = prod.category || 'General';
+
+                if (titleElem) titleElem.textContent = extractedTitle || 'Daraz Product';
+                if (sellerElem) sellerElem.textContent = extractedSeller || 'Daraz Seller';
+                if (ratingElem) ratingElem.textContent = ratingVal > 0 ? ratingVal.toFixed(1) : 'N/A';
+                if (reviewsElem) reviewsElem.textContent = extractedReviews;
+                if (categoryElem) categoryElem.textContent = `Category: ${extractedCategory}`;
                 if (visitBtn) visitBtn.href = url;
 
+                const fallbackImg = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80';
                 if (imageElem) {
-                    if (prod.imageUrl) {
-                        imageElem.src = prod.imageUrl;
-                        imageElem.classList.remove('d-none');
-                    } else {
-                        imageElem.classList.add('d-none');
-                    }
+                    imageElem.classList.remove('d-none');
+                    imageElem.src = prod.imageUrl || prod.image_url || fallbackImg;
+                    imageElem.onerror = function () {
+                        this.onerror = null;
+                        this.src = fallbackImg;
+                    };
                 }
 
                 DashboardController.setState('PREVIEW');
@@ -314,6 +322,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await API.getHistory(1, 10);
             if (res.success && res.data && Array.isArray(res.data.items)) {
                 renderHistoryTable(res.data.items);
+                if (window.TrendManager) {
+                    TrendManager.loadTrendChart('all');
+                    TrendManager.bindAspectToggles();
+                }
+                if (window.ComparisonManager) {
+                    ComparisonManager.loadComparisonOptions(res.data.items);
+                }
             } else {
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No historical analyses found.</td></tr>';
             }

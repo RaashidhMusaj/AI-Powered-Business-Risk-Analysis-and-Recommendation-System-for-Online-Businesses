@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi.exceptions import RequestValidationError
 
 from app.config.settings import settings
 from app.startup import startup_ai_engine
@@ -10,6 +11,7 @@ from app.utils.logger import api_logger
 from app.utils.exceptions import (
     BaseBusinessException,
     business_exception_handler,
+    validation_exception_handler,
     general_exception_handler,
 )
 from app.middleware.request_id_middleware import RequestIDMiddleware
@@ -44,10 +46,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-from fastapi import Request
-
 # Mount Static Assets Directory for Evaluation Prototype Demo SPA
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
+
 
 @app.middleware("http")
 async def add_no_cache_header(request: Request, call_next):
@@ -57,6 +58,7 @@ async def add_no_cache_header(request: Request, call_next):
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
     return response
+
 
 # CORS Middleware
 app.add_middleware(
@@ -73,12 +75,21 @@ app.add_middleware(RequestIDMiddleware)
 
 # Global Exception Handlers
 app.add_exception_handler(BaseBusinessException, business_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
+
 
 # Root Redirect to Single Page Application Demo
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/static/index.html")
+
+
+# Handle favicon.ico to prevent 404 log noise in browser
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
+
 
 # Register API Routers under /api
 app.include_router(health_router, prefix="/api")

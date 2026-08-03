@@ -156,7 +156,7 @@
                     </h5>
                     <div class="row align-items-center g-4">
                         <div class="col-md-3 text-center">
-                            <img id="previewImage" src="" alt="Product" class="img-fluid rounded-3 shadow-sm border d-none" style="max-height: 180px; object-fit: cover;">
+                            <img id="previewImage" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80" alt="Product Preview" class="img-fluid rounded-3 shadow-sm border" style="max-height: 180px; object-fit: cover;">
                         </div>
                         <div class="col-md-6">
                             <h4 id="previewTitle" class="h5 font-weight-bold text-dark mb-2">-</h4>
@@ -328,29 +328,103 @@
                         </div>
                     </div>
 
-                    <!-- VISUAL ANALYTICS CHARTS (Doughnut, Bar & Radar) -->
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-4">
+                    <!-- VISUAL ANALYTICS CHARTS (Sentiment Distribution) -->
+                    <div class="row g-4 mb-4 justify-content-center">
+                        <div class="col-md-8">
                             <div class="card border-0 bg-white shadow-sm rounded-4 p-3 h-100">
-                                <div class="card-body">
+                                <div class="card-body text-center">
                                     <h6 class="card-title font-weight-bold text-dark mb-3">Sentiment Distribution</h6>
-                                    <canvas id="sentimentChart" style="max-height: 240px;"></canvas>
+                                    <div style="max-width: 360px; margin: 0 auto;">
+                                        <canvas id="sentimentChart" style="max-height: 240px;"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card border-0 bg-white shadow-sm rounded-4 p-3 h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title font-weight-bold text-dark mb-3">Aspect Risk Scores</h6>
-                                    <canvas id="aspectChart" style="max-height: 240px;"></canvas>
+                    </div>
+
+                    <!-- TREND ANALYTICS & MULTI-ASPECT OVERLAY (FR 38 & FR 39) -->
+                    <div class="card border-0 bg-white shadow-sm rounded-4 p-4 mb-4" id="secTrends">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 g-2">
+                            <div>
+                                <h6 class="card-title font-weight-bold text-dark mb-1 d-flex align-items-center">
+                                    <i class="fa-solid fa-chart-line text-primary me-2"></i> Historical Risk Trends & Multi-Aspect Overlay
+                                </h6>
+                                <p class="small text-muted mb-0">Time-series tracking of Delivery, Quality, Trust, and Business Risk Index over analysis runs.</p>
+                            </div>
+                            <!-- Interactive Aspect Toggles (FR 39) -->
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <div class="form-check form-check-inline me-2">
+                                    <input class="form-check-input" type="checkbox" id="chkTrendDelivery" checked>
+                                    <label class="form-check-label small font-weight-bold text-info" for="chkTrendDelivery">Delivery</label>
+                                </div>
+                                <div class="form-check form-check-inline me-2">
+                                    <input class="form-check-input" type="checkbox" id="chkTrendQuality" checked>
+                                    <label class="form-check-label small font-weight-bold text-primary" for="chkTrendQuality">Quality</label>
+                                </div>
+                                <div class="form-check form-check-inline me-2">
+                                    <input class="form-check-input" type="checkbox" id="chkTrendTrust" checked>
+                                    <label class="form-check-label small font-weight-bold text-warning-emphasis" for="chkTrendTrust">Trust</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="chkTrendBRI" checked>
+                                    <label class="form-check-label small font-weight-bold text-danger" for="chkTrendBRI">BRI Index</label>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card border-0 bg-white shadow-sm rounded-4 p-3 h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title font-weight-bold text-dark mb-3">Risk Dimension Profile</h6>
-                                    <canvas id="radarChart" style="max-height: 240px;"></canvas>
+                        <div class="bg-light p-3 rounded-4 border">
+                            <canvas id="multiAspectTrendChart" style="min-height: 280px; max-height: 320px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- SIDE-BY-SIDE ANALYSIS COMPARISON ENGINE -->
+                    <div class="card border-0 bg-white shadow-sm rounded-4 p-4 mb-4" id="secCompare">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                            <h6 class="card-title font-weight-bold text-dark mb-0 d-flex align-items-center">
+                                <i class="fa-solid fa-code-compare text-success me-2"></i> Side-by-Side Analysis Comparison & Deltas
+                            </h6>
+                            <span class="badge bg-light text-dark border px-3 py-2">Comparative Analytics</span>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-5">
+                                <label class="form-label small text-muted font-weight-bold mb-1">Base Analysis (From):</label>
+                                <select id="compareFromSelect" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small text-muted font-weight-bold mb-1">Target Analysis (To):</label>
+                                <select id="compareToSelect" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-success btn-sm w-100 font-weight-bold py-2" id="btnExecuteCompare">
+                                    <i class="fa-solid fa-calculator me-1"></i> Compare
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Delta Results Cards -->
+                        <div id="comparisonResultsContainer" class="d-none">
+                            <div class="row g-3">
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-light rounded-3 border text-center">
+                                        <div class="small text-muted font-weight-bold mb-1">Delivery Risk</div>
+                                        <div class="h4 font-weight-bold mb-0" id="deltaDeliveryVal">0.0</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-light rounded-3 border text-center">
+                                        <div class="small text-muted font-weight-bold mb-1">Quality Risk</div>
+                                        <div class="h4 font-weight-bold mb-0" id="deltaQualityVal">0.0</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-light rounded-3 border text-center">
+                                        <div class="small text-muted font-weight-bold mb-1">Trust Risk</div>
+                                        <div class="h4 font-weight-bold mb-0" id="deltaTrustVal">0.0</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="p-3 bg-light rounded-3 border text-center">
+                                        <div class="small text-muted font-weight-bold mb-1">BRI Index Delta</div>
+                                        <div class="h4 font-weight-bold mb-0" id="deltaBRIVal">0.0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -327,6 +327,8 @@ class AnalysisService:
         analysis.aspect_statistics = sanitize_native_types(stats_info.get("aspectStatistics"))
         analysis.confidence_statistics = sanitize_native_types(conf_stats)
         analysis.risk_breakdown = sanitize_native_types(risks_info.get("riskBreakdown"))
+        analysis.business_risk_snapshot = sanitize_native_types(mapped_data.get("risks"))
+        analysis.recommendation_snapshot = sanitize_native_types(mapped_data.get("recommendation"))
 
         # Update per-review AI predictions
         predictions = eval_output.get("predictions", [])
