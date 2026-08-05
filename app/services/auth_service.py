@@ -148,3 +148,77 @@ class AuthService:
             isActive=user.is_active,
             createdAt=user.created_at.isoformat() if user.created_at else "",
         )
+
+    def request_password_reset(self, email: str) -> Dict[str, Any]:
+        """
+        Generates 6-digit OTP verification code, saves 15-min expiration to DB, and dispatches via email service.
+        """
+        import secrets
+        from app.services.email_service import send_otp_email
+
+        user = self.user_repo.get_by_email(email.strip().lower())
+        if not user:
+            # Generic response for security to prevent email enumeration
+            return {
+                "message": f"If an account exists for {email}, a 6-digit verification code has been dispatched.",
+                "email": email,
+                "sent": True,
+            }
+
+        # Generate 6-digit numeric OTP code
+        otp_code = str(secrets.randbelow(900000) + 100000)
+        now_utc = datetime.now(timezone.utc)
+        user.reset_otp_code = otp_code
+        user.reset_otp_expires_at = now_utc + timedelta(minutes=15)
+        self.db.commit()
+
+        sent_via_email, msg = send_otp_email(user.email, otp_code)
+
+        return {
+            "message": msg,
+            "email": user.email,
+            "sent": sent_via_email,
+            "otpCode": otp_code if not sent_via_email else None,  # Provided for instant UI demo mode testing when offline
+        }
+
+    def reset_password_with_otp(self, email: str, otp_code: str, new_password: str) -> TokenDataResponse:
+        """
+        Verifies 6-digit OTP code & expiration, updates hashed password via bcrypt, unlocks account, and issues new JWT token.
+        """
+        user = self.user_repo.get_by_email(email.strip().lower())
+        if not user:
+            raise BaseBusinessException("Invalid email address or verification code.", status_code=status.HTTP_400_BAD_REQUEST)
+
+        now_utc = datetime.now(timezone.utc)
+
+        if not user.reset_otp_code or user.reset_otp_code.strip() != otp_code.strip():
+            raise BaseBusinessException("Invalid verification code. Please check your code and try again.", status_code=status.HTTP_400_BAD_REQUEST)
+
+        if not user.reset_otp_expires_at:
+            raise BaseBusinessException("Verification code has expired. Please request a new one.", status_code=status.HTTP_400_BAD_REQUEST)
+
+        expires_at = user.reset_otp_expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+        if now_utc > expires_at:
+            raise BaseBusinessException("Verification code has expired. Please request a new code.", status_code=status.HTTP_400_BAD_REQUEST)
+
+        # Update password, reset lockout and clear OTP
+        user.hashed_password = hash_password(new_password)
+        user.reset_otp_code = None
+        user.reset_otp_expires_at = None
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        self.db.commit()
+
+        token = create_access_token(data={"sub": str(user.id), "username": user.username})
+
+        return TokenDataResponse(
+            accessToken=token,
+            tokenType="bearer",
+            userId=str(user.id),
+            username=user.username,
+            email=user.email,
+            role=user.role or "seller",
+        )

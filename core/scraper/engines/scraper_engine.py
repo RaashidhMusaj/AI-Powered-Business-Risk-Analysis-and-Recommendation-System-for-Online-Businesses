@@ -86,6 +86,7 @@ class ScraperEngine(ScraperInterface):
         
         self._driver = webdriver.Chrome(options=chrome_options)
         self._driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        self._driver.set_page_load_timeout(10)
         
     def _check_stop(self) -> bool:
         """Check if user pressed 'Q' (CLI mode) or API requested stop (Web mode)."""
@@ -665,10 +666,16 @@ class ScraperEngine(ScraperInterface):
         try:
             self._setup_browser(headless=True)
             if self._driver:
-                self._driver.set_page_load_timeout(15)
+                self._driver.set_page_load_timeout(10)
 
             logger.info(f"Extracting product preview for: {product_url}")
-            self._driver.get(product_url)
+            try:
+                self._driver.get(product_url)
+            except Exception as nav_err:
+                if "timeout" in str(nav_err).lower() or "timed out" in str(nav_err).lower():
+                    logger.warning(f"Page load timed out for {product_url}, continuing with metadata extraction.")
+                else:
+                    raise nav_err
             time.sleep(3)
             try:
                 self._driver.execute_script("window.scrollTo(0, 350);")
@@ -676,10 +683,28 @@ class ScraperEngine(ScraperInterface):
             except Exception:
                 pass
 
-            return self._extract_metadata_from_driver(product_url)
+            meta = self._extract_metadata_from_driver(product_url)
+            # Rejection rule for category / directory / 404 / fake product pages
+            clean_title = (meta.get("title") or "").strip().lower()
+            clean_seller = (meta.get("seller") or "").strip().lower()
+            rating = float(meta.get("overallRating") or 0.0)
+            reviews = int(meta.get("totalReviews") or 0)
+
+            invalid_titles = ["error", "404", "page not found", "not found", "products", "catalog", "category", "daraz products", "search", "daraz verified product"]
+            invalid_sellers = ["become a seller", "become a seller!", "n/a", "none"]
+
+            is_title_bad = clean_title in invalid_titles or "404" in clean_title or clean_title.startswith("error")
+            is_seller_bad = clean_seller in invalid_sellers
+
+            if is_title_bad or is_seller_bad or (rating == 0.0 and reviews == 0 and (is_seller_bad or clean_title in [fallback_title.lower(), "products"])):
+                raise ValueError("Failed to fetch product details from the provided URL. The link points to a non-existent or inactive product page (404 Error).")
+
+            return meta
         except Exception as e:
-            logger.error(f"Error extracting product preview (using URL slug fallback): {e}")
-            return fallback_data
+            logger.error(f"Error extracting product preview: {e}")
+            if isinstance(e, ValueError) or "product details" in str(e) or "404 Error" in str(e) or "category/directory page" in str(e):
+                raise
+            raise ValueError(f"Failed to extract product details: {str(e)}")
         finally:
             if self._driver:
                 try:

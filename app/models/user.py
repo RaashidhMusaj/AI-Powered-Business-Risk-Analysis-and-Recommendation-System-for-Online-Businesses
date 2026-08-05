@@ -18,6 +18,8 @@ class User(BaseEntity):
     is_active = Column(Boolean, default=True, nullable=False)
     failed_login_attempts = Column(Integer, default=0, nullable=False)
     locked_until = Column(DateTime, nullable=True)
+    reset_otp_code = Column(String(16), nullable=True, index=True)
+    reset_otp_expires_at = Column(DateTime, nullable=True)
 
     # Relationships
     products = relationship(

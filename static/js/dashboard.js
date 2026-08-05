@@ -82,8 +82,15 @@ const DashboardController = {
             }
 
         } else if (newState === 'ERROR') {
-            if (btnCheck) btnCheck.disabled = false;
-            if (btnStart) btnStart.disabled = false;
+            if (previewCard) previewCard.classList.add('d-none');
+            if (progressCard) progressCard.classList.add('d-none');
+            if (resultsCard) resultsCard.classList.add('d-none');
+
+            if (btnCheck) {
+                btnCheck.disabled = false;
+                btnCheck.innerHTML = '<i class="fa-solid fa-magnifying-glass me-2"></i> Check Product';
+            }
+            if (btnStart) btnStart.disabled = true;
             LoadingManager.stopTimer();
             this.setFinishScrapingButtonState('DISABLED');
             if (payload && typeof payload === 'string') {
@@ -274,6 +281,7 @@ const DashboardController = {
         const banner = document.getElementById('alertBanner');
         const icon = document.getElementById('alertIcon');
         const msg = document.getElementById('alertMessage');
+        const closeBtn = document.getElementById('btnCloseAlert');
         if (!banner || !msg) return;
 
         banner.className = `alert alert-${type} alert-dismissible fade show shadow-sm mb-4`;
@@ -284,7 +292,18 @@ const DashboardController = {
             else if (type === 'success') icon.className = 'fa-solid fa-circle-check me-2 fa-lg';
             else icon.className = 'fa-solid fa-circle-info me-2 fa-lg';
         }
+
+        if (closeBtn && !closeBtn._hasCloseListener) {
+            closeBtn.addEventListener('click', () => {
+                banner.classList.add('d-none');
+            });
+            closeBtn._hasCloseListener = true;
+        }
+
         banner.classList.remove('d-none');
+        try {
+            banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (e) {}
     },
 
     showAuthAlert(message, type = 'danger') {

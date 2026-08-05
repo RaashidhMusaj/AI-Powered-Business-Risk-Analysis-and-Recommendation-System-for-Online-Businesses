@@ -69,7 +69,7 @@
                 <i id="alertIcon" class="fa-solid me-2 fa-lg"></i>
                 <div id="alertMessage">Notification Message</div>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" id="btnCloseAlert" aria-label="Close"></button>
         </div>
 
         <!-- LANDING PAGE HERO SECTION -->
@@ -565,12 +565,17 @@
                                         <input type="text" id="loginIdentifier" class="form-control" placeholder="enter email or username" required>
                                     </div>
                                 </div>
-                                <div class="mb-4">
+                                <div class="mb-2">
                                     <label class="form-label font-weight-bold small">Password</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-white"><i class="fa-solid fa-lock text-muted"></i></span>
                                         <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
                                     </div>
+                                </div>
+                                <div class="text-end mb-4">
+                                    <a href="#" id="linkForgotPassword" class="small text-primary font-weight-bold text-decoration-none">
+                                        <i class="fa-solid fa-key me-1"></i> Forgot Password?
+                                    </a>
                                 </div>
                                 <button type="button" id="btnSubmitLogin" class="btn btn-primary w-100 py-3 font-weight-bold rounded-3 shadow-sm">
                                     <i class="fa-solid fa-right-to-bracket me-2"></i> Log In to Account
@@ -585,21 +590,21 @@
                                     <label class="form-label font-weight-bold small">Full Name (Optional)</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-white"><i class="fa-solid fa-id-card text-muted"></i></span>
-                                        <input type="text" id="registerFullName" class="form-control" placeholder="John Doe">
+                                        <input type="text" id="registerFullName" class="form-control" placeholder="Mohamed">
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label font-weight-bold small">Email Address</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-white"><i class="fa-solid fa-envelope text-muted"></i></span>
-                                        <input type="email" id="registerEmail" class="form-control" placeholder="name@example.com" required>
+                                        <input type="email" id="registerEmail" class="form-control" placeholder="mohamed@gmail.com" required>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label font-weight-bold small">Username</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-white"><i class="fa-solid fa-at text-muted"></i></span>
-                                        <input type="text" id="registerUsername" class="form-control" placeholder="johndoe" required minlength="3">
+                                        <input type="text" id="registerUsername" class="form-control" placeholder="mohamed" required minlength="3">
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -614,6 +619,63 @@
                                     <i class="fa-solid fa-user-plus me-2"></i> Create Account
                                 </button>
                             </form>
+                        </div>
+
+                        <!-- FORGOT / RESET PASSWORD TAB -->
+                        <div class="tab-pane fade" id="forgotTab" role="tabpanel">
+                            <!-- Step 1: Request 6-Digit OTP -->
+                            <div id="stepRequestOTP">
+                                <p class="small text-muted mb-3">Enter your registered email address to receive a 6-digit verification code.</p>
+                                <form id="forgotEmailForm" onsubmit="return false;">
+                                    <div class="mb-4">
+                                        <label class="form-label font-weight-bold small">Registered Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="fa-solid fa-envelope text-muted"></i></span>
+                                            <input type="email" id="forgotEmail" class="form-control" placeholder="user@example.com" required>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="btnSubmitForgotOTP" class="btn btn-warning w-100 py-3 font-weight-bold rounded-3 shadow-sm text-dark mb-2">
+                                        <i class="fa-solid fa-paper-plane me-2"></i> Send 6-Digit OTP Code
+                                    </button>
+                                    <div class="text-center">
+                                        <a href="#" id="linkBackToLoginFromForgot" class="small text-muted font-weight-bold text-decoration-none">
+                                            <i class="fa-solid fa-arrow-left me-1"></i> Back to Login
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Step 2: Enter OTP & New Password -->
+                            <div id="stepResetPassword" class="d-none">
+                                <div class="alert alert-info py-2 small mb-3" id="otpSentNotice">
+                                    A 6-digit OTP code has been dispatched to your email address.
+                                </div>
+                                <form id="resetPasswordForm" onsubmit="return false;">
+                                    <div class="mb-3">
+                                        <label class="form-label font-weight-bold small">6-Digit Verification Code</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="fa-solid fa-shield-halved text-success"></i></span>
+                                            <input type="text" id="resetOTPCode" class="form-control font-monospace font-weight-bold" placeholder="e.g. 849201" maxlength="6" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label font-weight-bold small">New Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="fa-solid fa-lock text-muted"></i></span>
+                                            <input type="password" id="resetNewPassword" class="form-control" placeholder="Min 8 chars, 1 upper, 1 lower, 1 number & 1 symbol" required minlength="8">
+                                        </div>
+                                        <div class="form-text small text-muted">Must meet security requirements.</div>
+                                    </div>
+                                    <button type="button" id="btnSubmitResetPassword" class="btn btn-success w-100 py-3 font-weight-bold rounded-3 shadow-sm mb-2">
+                                        <i class="fa-solid fa-key me-2"></i> Reset Password & Log In
+                                    </button>
+                                    <div class="text-center">
+                                        <a href="#" id="linkBackToLoginFromReset" class="small text-muted font-weight-bold text-decoration-none">
+                                            <i class="fa-solid fa-arrow-left me-1"></i> Back to Login
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
 
                     </div>

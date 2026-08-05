@@ -57,3 +57,29 @@ def test_api_unsupported_platform():
         json={"productUrl": "https://www.amazon.com/dp/B08N5WRWNW"}
     )
     assert response.status_code in [200, 400, 422, 500]
+
+
+def test_api_category_url_rejection():
+    """Scenario 6: Category/Directory URL returns HTTP 400 with category rejection message."""
+    response = client.post(
+        "/api/v1/analysis/check-product",
+        json={"productUrl": "https://www.daraz.lk/products"}
+    )
+    assert response.status_code == 400
+    data = response.json()
+    assert data["success"] is False
+    assert "category/directory page" in data["message"]
+
+
+def test_api_incomplete_daraz_url_rejection():
+    """Scenario 7: Incomplete Daraz product URL missing item ID returns HTTP 400 immediately."""
+    response = client.post(
+        "/api/v1/analysis/check-product",
+        json={"productUrl": "https://www.daraz.lk/products/over-ear-noise"}
+    )
+    assert response.status_code == 400
+    data = response.json()
+    assert data["success"] is False
+    assert "incomplete or invalid" in data["message"].lower() or "product details" in data["message"].lower()
+
+

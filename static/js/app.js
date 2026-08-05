@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailPattern.test(email)) {
-            DashboardController.showAuthAlert('Please enter a valid email address following RFC 822 format (e.g., user@example.com).', 'danger');
+            DashboardController.showAuthAlert('Please enter a valid email address(EX : user@example.com)', 'danger');
             return;
         }
 
@@ -157,6 +157,149 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             btnSubmitRegister.disabled = false;
             btnSubmitRegister.innerHTML = '<i class="fa-solid fa-user-plus me-2"></i> Create Account';
+        }
+    }
+
+    // --- Forgot / Reset Password Handlers ---
+    const linkForgotPassword = document.getElementById('linkForgotPassword');
+    if (linkForgotPassword) {
+        linkForgotPassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            const forgotTabBtn = document.getElementById('forgot-tab');
+            if (forgotTabBtn) {
+                const tab = new bootstrap.Tab(forgotTabBtn);
+                tab.show();
+            } else {
+                const forgotPane = document.getElementById('forgotTab');
+                const loginPane = document.getElementById('loginTab');
+                const regPane = document.getElementById('registerTab');
+                if (loginPane) loginPane.classList.remove('show', 'active');
+                if (regPane) regPane.classList.remove('show', 'active');
+                if (forgotPane) forgotPane.classList.add('show', 'active');
+            }
+            DashboardController.hideAuthAlert();
+            showOTPStep(1);
+        });
+    }
+
+    const linkBackToLoginFromForgot = document.getElementById('linkBackToLoginFromForgot');
+    const linkBackToLoginFromReset = document.getElementById('linkBackToLoginFromReset');
+    [linkBackToLoginFromForgot, linkBackToLoginFromReset].forEach(link => {
+        if (link) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const loginTabBtn = document.getElementById('login-tab');
+                if (loginTabBtn) {
+                    const tab = new bootstrap.Tab(loginTabBtn);
+                    tab.show();
+                } else {
+                    const forgotPane = document.getElementById('forgotTab');
+                    const loginPane = document.getElementById('loginTab');
+                    if (forgotPane) forgotPane.classList.remove('show', 'active');
+                    if (loginPane) loginPane.classList.add('show', 'active');
+                }
+                DashboardController.hideAuthAlert();
+            });
+        }
+    });
+
+    function showOTPStep(step) {
+        const step1 = document.getElementById('stepRequestOTP');
+        const step2 = document.getElementById('stepResetPassword');
+        if (step === 1) {
+            if (step1) step1.classList.remove('d-none');
+            if (step2) step2.classList.add('d-none');
+        } else {
+            if (step1) step1.classList.add('d-none');
+            if (step2) step2.classList.remove('d-none');
+        }
+    }
+
+    const btnSubmitForgotOTP = document.getElementById('btnSubmitForgotOTP');
+    if (btnSubmitForgotOTP) btnSubmitForgotOTP.addEventListener('click', handleForgotOTPSubmit);
+
+    async function handleForgotOTPSubmit() {
+        const emailElem = document.getElementById('forgotEmail');
+        const email = emailElem ? emailElem.value.trim() : '';
+
+        if (!email) {
+            DashboardController.showAuthAlert('Please enter your registered email address.', 'danger');
+            return;
+        }
+
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailPattern.test(email)) {
+            DashboardController.showAuthAlert('Please enter a valid email address following standard format.', 'danger');
+            return;
+        }
+
+        DashboardController.hideAuthAlert();
+        btnSubmitForgotOTP.disabled = true;
+        btnSubmitForgotOTP.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Sending OTP code...';
+
+        try {
+            const res = await API.forgotPassword(email);
+            showOTPStep(2);
+            const noticeElem = document.getElementById('otpSentNotice');
+            if (noticeElem) {
+                let noticeText = res.message || `A 6-digit OTP code has been dispatched to ${email}.`;
+                if (res.data && res.data.otpCode) {
+                    noticeText += `<br><strong>[DEMO CODE]:</strong> <span class="badge bg-success font-monospace px-2 py-1">${res.data.otpCode}</span>`;
+                }
+                noticeElem.innerHTML = noticeText;
+            }
+            DashboardController.showAuthAlert(res.message || 'OTP verification code generated successfully.', 'info');
+        } catch (err) {
+            DashboardController.showAuthAlert(err.message || 'Failed to request password reset OTP.', 'danger');
+        } finally {
+            btnSubmitForgotOTP.disabled = false;
+            btnSubmitForgotOTP.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Send 6-Digit OTP Code';
+        }
+    }
+
+    const btnSubmitResetPassword = document.getElementById('btnSubmitResetPassword');
+    if (btnSubmitResetPassword) btnSubmitResetPassword.addEventListener('click', handleResetPasswordSubmit);
+
+    async function handleResetPasswordSubmit() {
+        const emailElem = document.getElementById('forgotEmail');
+        const otpElem = document.getElementById('resetOTPCode');
+        const newPasswordElem = document.getElementById('resetNewPassword');
+
+        const email = emailElem ? emailElem.value.trim() : '';
+        const otpCode = otpElem ? otpElem.value.trim() : '';
+        const newPassword = newPasswordElem ? newPasswordElem.value : '';
+
+        if (!email || !otpCode || !newPassword) {
+            DashboardController.showAuthAlert('Please enter the 6-digit OTP code and your new password.', 'danger');
+            return;
+        }
+
+        if (otpCode.length < 6) {
+            DashboardController.showAuthAlert('Please enter the complete 6-digit OTP code.', 'danger');
+            return;
+        }
+
+        DashboardController.hideAuthAlert();
+        btnSubmitResetPassword.disabled = true;
+        btnSubmitResetPassword.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Resetting password...';
+
+        try {
+            const res = await API.resetPassword(email, otpCode, newPassword);
+            if (res.success && res.data) {
+                DashboardController.closeAuthModal();
+                DashboardController.setState('IDLE');
+                DashboardController.showAlert('Password reset successfully! You are now logged in.', 'success');
+                loadHistoryTable();
+                if (otpElem) otpElem.value = '';
+                if (newPasswordElem) newPasswordElem.value = '';
+            } else {
+                DashboardController.showAuthAlert(res.message || 'Failed to reset password.', 'danger');
+            }
+        } catch (err) {
+            DashboardController.showAuthAlert(err.message || 'Failed to reset password.', 'danger');
+        } finally {
+            btnSubmitResetPassword.disabled = false;
+            btnSubmitResetPassword.innerHTML = '<i class="fa-solid fa-key me-2"></i> Reset Password & Log In';
         }
     }
 
@@ -202,12 +345,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const visitBtn = document.getElementById('btnVisitProduct');
                 const imageElem = document.getElementById('previewImage');
 
-                const extractedTitle = prod.title || prod.productTitle || prod.product_name;
-                const extractedSeller = prod.seller || prod.sellerName || prod.seller_name;
+                const extractedTitle = (prod.title || prod.productTitle || prod.product_name || '').trim();
+                const extractedSeller = (prod.seller || prod.sellerName || prod.seller_name || '').trim();
                 const rawRating = prod.overallRating ?? prod.rating ?? prod.overall_rating;
                 const ratingVal = typeof rawRating === 'number' ? rawRating : parseFloat(rawRating) || 0.0;
                 const extractedReviews = prod.totalReviews ?? prod.reviewCount ?? prod.total_reviews ?? 0;
                 const extractedCategory = prod.category || 'General';
+
+                const invalidTitles = ['error', '404', 'page not found', 'not found', 'daraz verified product', 'daraz product', 'products', 'catalog', 'category', 'search'];
+                const invalidSellers = ['become a seller', 'become a seller!', 'n/a', 'none'];
+
+                const isTitleBad = invalidTitles.includes(extractedTitle.toLowerCase()) || extractedTitle.toLowerCase().includes('404') || extractedTitle.toLowerCase().startsWith('error');
+                const isSellerBad = invalidSellers.includes(extractedSeller.toLowerCase());
+
+                if (isTitleBad || isSellerBad || (ratingVal === 0 && extractedReviews === 0 && (isSellerBad || isTitleBad))) {
+                    DashboardController.setState('ERROR', 'Failed to fetch product details from the provided URL. The link points to a non-existent or inactive product page (404 Error).');
+                    return;
+                }
 
                 if (titleElem) titleElem.textContent = extractedTitle || 'Daraz Product';
                 if (sellerElem) sellerElem.textContent = extractedSeller || 'Daraz Seller';

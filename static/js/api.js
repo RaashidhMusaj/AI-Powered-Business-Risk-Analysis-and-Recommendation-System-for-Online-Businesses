@@ -96,6 +96,29 @@ const API = {
         return res;
     },
 
+    async forgotPassword(email) {
+        return await this.request('/api/v1/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+    },
+
+    async resetPassword(email, otpCode, newPassword) {
+        const res = await this.request('/api/v1/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ email, otpCode, newPassword })
+        });
+        if (res.success && res.data && res.data.accessToken) {
+            this.setToken(res.data.accessToken);
+            this.setUserInfo({
+                id: res.data.userId,
+                username: res.data.username,
+                email: res.data.email
+            });
+        }
+        return res;
+    },
+
     async getProfile() {
         return await this.request('/api/v1/profile');
     },

@@ -60,3 +60,50 @@ class UserProfileResponse(BaseModel):
     role: str = Field("seller", description="User role string")
     isActive: bool = Field(True, description="Account active status")
     createdAt: str = Field(..., description="Account creation timestamp")
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., description="Registered user email address")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("Email address is required.")
+        v = v.strip()
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_pattern, v):
+            raise ValueError("Invalid email address format. Must follow standard RFC 822 format (user@domain.com)")
+        return v.lower()
+
+
+class ResetPasswordWithOTPRequest(BaseModel):
+    email: str = Field(..., description="Registered user email address")
+    otpCode: str = Field(..., min_length=6, max_length=16, description="6-digit OTP verification code")
+    newPassword: str = Field(..., min_length=8, description="New account password (min 8 chars, 1 upper, 1 lower, 1 digit, 1 symbol)")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("Email address is required.")
+        v = v.strip()
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_pattern, v):
+            raise ValueError("Invalid email address format.")
+        return v.lower()
+
+    @field_validator("newPassword")
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long.")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter (A-Z).")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter (a-z).")
+        if not re.search(r"[0-9]", v):
+            raise ValueError("Password must contain at least one numeric digit (0-9).")
+        if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?]", v):
+            raise ValueError("Password must contain at least one special character.")
+        return v

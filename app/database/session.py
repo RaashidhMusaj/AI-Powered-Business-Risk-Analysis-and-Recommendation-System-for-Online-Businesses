@@ -50,6 +50,13 @@ def ensure_schema_migrations():
                     db_logger.info("Migrating users table: adding missing 'locked_until' column...")
                     dt_type = "DATETIME" if is_sqlite else "TIMESTAMP"
                     conn.execute(text(f"ALTER TABLE users ADD COLUMN locked_until {dt_type}"))
+                if "reset_otp_code" not in user_cols:
+                    db_logger.info("Migrating users table: adding missing 'reset_otp_code' column...")
+                    conn.execute(text("ALTER TABLE users ADD COLUMN reset_otp_code VARCHAR(16)"))
+                if "reset_otp_expires_at" not in user_cols:
+                    db_logger.info("Migrating users table: adding missing 'reset_otp_expires_at' column...")
+                    dt_type = "DATETIME" if is_sqlite else "TIMESTAMP"
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN reset_otp_expires_at {dt_type}"))
 
                 now_iso = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
                 if is_sqlite:

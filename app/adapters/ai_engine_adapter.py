@@ -38,7 +38,11 @@ class AIEngineAdapter:
         """
         ai_logger.info(f"Extracting product preview via adapter: {product_url}")
         scraper = ScraperEngine()
-        return scraper.extract_product_preview(product_url)
+        try:
+            return scraper.extract_product_preview(product_url)
+        except ValueError as e:
+            from app.utils.exceptions import InvalidProductURLError
+            raise InvalidProductURLError(message=str(e), details={"provided_url": product_url})
 
     def run_full_pipeline(self, product_url: str, job_state=None) -> Dict[str, Any]:
         """

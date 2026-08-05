@@ -42,14 +42,33 @@ class AnalysisService:
         self.review_repo = review_repo or (ReviewRepository(db) if db else None)
 
     def _validate_url(self, url: str):
+        import re
         if not url or not isinstance(url, str) or not url.startswith("http"):
             raise InvalidProductURLError(
+                message="The provided product URL is invalid or unsupported. URL must start with http:// or https://",
                 details={"provided_url": url, "reason": "URL must start with http:// or https://"}
             )
 
+        parsed_path = url.split("?")[0].rstrip("/").lower()
+        if parsed_path.endswith("/products") or parsed_path.endswith("/catalog") or parsed_path.endswith("/category") or "/catalog/?" in url.lower() or "/search/?" in url.lower():
+            raise InvalidProductURLError(
+                message="Failed to scrape product data from the provided URL. The provided link is a category/directory page and does not point to a specific product.",
+                details={"provided_url": url, "reason": "Category/directory pages are not valid product pages."}
+            )
+
+        # Check for incomplete Daraz product URLs under /products/ without product item ID (-i<id>) or .html
+        if "daraz" in parsed_path and "/products/" in parsed_path:
+            has_item_id = bool(re.search(r'-i\d+', parsed_path))
+            has_html_ext = parsed_path.endswith(".html")
+            if not has_item_id and not has_html_ext:
+                raise InvalidProductURLError(
+                    message="The provided Daraz URL is incomplete or invalid. Valid product URLs must include a specific product ID (e.g., https://www.daraz.lk/products/...-i12345.html).",
+                    details={"provided_url": url, "reason": "Daraz product URLs must contain a valid item ID (-i<id>) or .html extension."}
+                )
+
     async def check_product(self, product_url: str) -> Dict[str, Any]:
         """
-        Step 1: Validates product URL and extracts product preview metadata via Selenium.
+        Step 1: Validates product URL, extracts product preview metadata via Selenium, and verifies details are filled.
         """
         self._validate_url(product_url)
         api_logger.info(f"Checking product preview for URL: {product_url}")
@@ -57,6 +76,25 @@ class AnalysisService:
         preview_data = await asyncio.to_thread(
             self.adapter.extract_product_preview, product_url
         )
+
+        # Post-fetch verification: check if all essential product details are filled
+        title = str(preview_data.get("title") or preview_data.get("productTitle") or "").strip()
+        seller = str(preview_data.get("seller") or preview_data.get("sellerName") or "").strip()
+        rating = float(preview_data.get("overallRating") or preview_data.get("rating") or 0.0)
+        total_reviews = int(preview_data.get("totalReviews") or preview_data.get("reviewCount") or 0)
+
+        invalid_titles = ["error", "404", "page not found", "not found", "products", "catalog", "category", "search", "daraz verified product", "daraz product"]
+        invalid_sellers = ["become a seller", "become a seller!", "n/a", "none"]
+
+        is_title_bad = title.lower() in invalid_titles or "404" in title.lower() or title.lower().startswith("error")
+        is_seller_bad = seller.lower() in invalid_sellers
+
+        if is_title_bad or is_seller_bad or (rating == 0.0 and total_reviews == 0 and is_seller_bad):
+            raise InvalidProductURLError(
+                message="Failed to fetch product details from the provided URL. The link points to a non-existent or inactive product page (404 Error).",
+                details={"provided_url": product_url, "title": title, "seller": seller}
+            )
+
         return preview_data
 
     async def start_analysis(self, product_url: str, user_id: UUID, save_history: bool = True) -> Dict[str, Any]:
@@ -216,14 +254,39 @@ class AnalysisService:
         analysis_repo = AnalysisRepository(db=db)
         review_repo = ReviewRepository(db=db)
 
-        title_val = str(getattr(raw_product, "product_title", "") or getattr(raw_product, "name", "") or "Daraz Product")[:500]
-        seller_val = str(getattr(raw_product, "seller_name", "") or getattr(raw_product, "seller", "") or "Daraz Verified Seller")[:250]
+        title_val = str(
+            getattr(raw_product, "product_name", "")
+            or getattr(raw_product, "product_title", "")
+            or getattr(raw_product, "name", "")
+            or getattr(raw_product, "title", "")
+            or "Daraz Product"
+        )[:500]
+        seller_val = str(
+            getattr(raw_product, "seller_name", "")
+            or getattr(raw_product, "seller", "")
+            or "Daraz Verified Seller"
+        )[:250]
         img_val = str(getattr(raw_product, "image_url", "") or "")[:2000]
         cat_val = str(getattr(raw_product, "category", "") or "Electronics")[:500]
         platform_val = str(getattr(raw_product, "platform", "") or "Daraz")[:60]
         rating_val = float(getattr(raw_product, "overall_rating", 0.0) or getattr(raw_product, "rating", 0.0))
         scraped_reviews = getattr(raw_product, "reviews", [])
         reviews_val = len(scraped_reviews)
+
+        invalid_titles = ["error", "404", "page not found", "not found", "products", "catalog", "category", "search"]
+        invalid_sellers = ["become a seller", "become a seller!", "n/a", "none"]
+
+        title_lower = title_val.lower().strip()
+        seller_lower = seller_val.lower().strip()
+
+        is_title_bad = title_lower in invalid_titles or "404" in title_lower or title_lower.startswith("error")
+        is_seller_bad = seller_lower in invalid_sellers
+
+        if is_title_bad or (rating_val == 0.0 and reviews_val == 0 and is_seller_bad):
+            raise InvalidProductURLError(
+                message="Cannot save invalid product to database. The provided link is an invalid or non-existent product page.",
+                details={"product_url": product_url, "title": title_val, "seller": seller_val}
+            )
 
         existing_product = product_repo.get_by_url(product_url, user_id=user_id)
         if not existing_product:
