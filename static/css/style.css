@@ -1,0 +1,99 @@
+/* Custom Styling for AI Business Risk Analysis Prototype */
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #212529;
+    background-color: #f8f9fa;
+}
+
+.font-weight-bold {
+    font-weight: 600 !important;
+}
+
+.tracking-wide {
+    letter-spacing: 0.5px;
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Card Styling */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Stepper Bar Styling */
+.stepper-icon-box {
+    width: 46px;
+    height: 46px;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.stepper-step.active .stepper-icon-box {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 12px rgba(13, 110, 253, 0.4);
+}
+
+.stepper-step.completed .stepper-icon-box {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    border-color: #198754 !important;
+}
+
+.stepper-step.active span {
+    color: #0d6efd !important;
+}
+
+.stepper-step.completed span {
+    color: #198754 !important;
+}
+
+/* Monospace Terminal Styling */
+#processingConsole::-webkit-scrollbar {
+    width: 6px;
+}
+
+#processingConsole::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+#processingConsole::-webkit-scrollbar-thumb {
+    background: #3e3e3e;
+    border-radius: 3px;
+}
+
+#processingConsole::-webkit-scrollbar-thumb:hover {
+    background: #555555;
+}
+
+/* Disabled Button Styling */
+button:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.65 !important;
+}
+
+/* Progress bar animation */
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}

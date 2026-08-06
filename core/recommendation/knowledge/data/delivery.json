@@ -1,0 +1,46 @@
+[
+  {
+    "id": "delivery_high_001",
+    "aspect": "DELIVERY",
+    "risk_level": "HIGH",
+    "title": "Improve Delivery Speed and Product Protection",
+    "description": "Many customers have reported delayed deliveries, damaged packages, or orders not arriving as expected. Improving your delivery process can increase customer satisfaction and reduce negative reviews.",
+    "actions": [
+      "Work with reliable delivery partners to ensure orders arrive on time",
+      "Use stronger packaging to protect products during shipping",
+      "Provide customers with tracking information so they can monitor their orders",
+      "Investigate recurring delivery issues and take corrective action"
+    ],
+    "priority": "IMMEDIATE",
+    "tags": [
+      "delivery",
+      "shipping",
+      "packaging",
+      "customer_experience"
+    ],
+    "version": 1,
+    "enabled": true
+  },
+  {
+    "id": "delivery_medium_001",
+    "aspect": "DELIVERY",
+    "risk_level": "MEDIUM",
+    "title": "Improve Delivery Efficiency",
+    "description": "Some customers have experienced delays in receiving their orders. Making your delivery process more efficient and setting clear expectations can improve the overall customer experience.",
+    "actions": [
+      "Prepare and dispatch orders as quickly as possible",
+      "Provide accurate estimated delivery dates on your product listings",
+      "Keep customers updated if there are unexpected delivery delays",
+      "Regularly review delivery performance to identify areas for improvement"
+    ],
+    "priority": "HIGH",
+    "tags": [
+      "delivery",
+      "shipping",
+      "order_fulfillment",
+      "customer_experience"
+    ],
+    "version": 1,
+    "enabled": true
+  }
+]

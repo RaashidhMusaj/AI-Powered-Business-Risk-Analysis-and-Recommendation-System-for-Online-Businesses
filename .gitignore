@@ -47,6 +47,8 @@ logs/
 htmlcov/
 .tox/
 .nox/
+*.csv
+product_reviews_*.csv
 
 # =====================================================
 # IDE

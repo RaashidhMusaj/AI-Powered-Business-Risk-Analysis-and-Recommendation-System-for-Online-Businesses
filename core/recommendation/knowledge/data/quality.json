@@ -1,0 +1,42 @@
+[
+  {
+    "id": "quality_high_001",
+    "aspect": "QUALITY",
+    "risk_level": "HIGH",
+    "title": "Resolve Major Product Quality Issues",
+    "description": "Many customers are reporting serious problems with your product, such as defects, poor quality, or items not working as expected. Taking immediate action can help improve customer satisfaction and protect your business reputation.",
+    "actions": [
+      "Inspect your current product stock to identify defective items",
+      "Temporarily stop selling products from affected batches until the issue is resolved",
+      "Work with your supplier or manufacturer to improve product quality before future shipments"
+    ],
+    "priority": "HIGH",
+    "tags": [
+      "quality",
+      "defect",
+      "product_quality"
+    ],
+    "version": 1,
+    "enabled": true
+  },
+  {
+    "id": "quality_medium_001",
+    "aspect": "QUALITY",
+    "risk_level": "MEDIUM",
+    "title": "Improve Product Quality and Customer Expectations",
+    "description": "Some customers have noticed minor issues with the product's appearance, material, or overall quality. Addressing these concerns early can help prevent more serious complaints in the future.",
+    "actions": [
+      "Review customer feedback to identify the most common quality concerns",
+      "Improve the product or materials where possible",
+      "Update the product description with accurate information to better match customer expectations"
+    ],
+    "priority": "NORMAL",
+    "tags": [
+      "quality",
+      "customer_expectation",
+      "product_improvement"
+    ],
+    "version": 1,
+    "enabled": true
+  }
+]
