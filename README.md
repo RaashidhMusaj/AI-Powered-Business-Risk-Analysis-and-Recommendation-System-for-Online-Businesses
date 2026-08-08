@@ -198,4 +198,4 @@ This repository represents the official codebase for a **University Final Year R
 
 ## 📄 License & Disclaimer
 
-This project is licensed under the academic and research guidelines of the university. The code provided is for educational and research evaluation purposes.
+This project is licensed under the research and academics guidelines of the university. The code provided is for educational and research evaluation purposes.
